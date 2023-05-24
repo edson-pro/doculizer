@@ -17,7 +17,7 @@ const generateResponse = async ({ input, history = [] }) => {
   );
   const chain = ConversationalRetrievalQAChain.fromLLM(
     model,
-    vectorStore.asRetriever()
+    vectorStore.asRetriever(1)
   );
 
   const res = await chain.call({ question: input, chat_history: history });
