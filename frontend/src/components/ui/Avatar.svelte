@@ -1,7 +1,7 @@
 <script lang="ts">
   export let src = "";
   export let name = "";
-  export let size = "md";
+  export let size = "sm";
   export let variant = "filled";
   export let rounded = "sm";
 
@@ -26,7 +26,7 @@
   }[variant];
 
   $: sizeClass = {
-    xs: "h-[22px] w-[22px] text-[10px]",
+    xs: "h-[26px] w-[26px] text-[10px]",
     sm: "h-[30px] w-[30px] text-[12px]",
     md: "h-[38px] w-[38px]",
     lg: "h-[56px] w-[56px]",
@@ -35,7 +35,7 @@
 
   $: roundedClass = {
     xs: "rounded-[2px]",
-    sm: "rounded-[4px]",
+    sm: "rounded-[3px]",
     md: "rounded-[8px]",
     lg: "rounded-[16px]",
     xl: "rounded-[32px]",
@@ -64,7 +64,7 @@
       style:background={color}
       style:color={variant === "light" ? color.slice(0, 7) : "white"}
       class="
-        h-full  w-full uppercase flex font-medium tracking-[1px] items-center justify-center
+        h-full w-full uppercase flex font-medium tracking-[1px] items-center justify-center
         {variantClass}
       "
     >
