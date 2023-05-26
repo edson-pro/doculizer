@@ -1,7 +1,10 @@
 <script>
   import {
+    ChevronLeftIcon,
+    ChevronRightIcon,
     FileIcon,
     GridIcon,
+    ListIcon,
     MessageSquareIcon,
     MoreHorizontalIcon,
     MoreVerticalIcon,
@@ -9,10 +12,13 @@
     PlusIcon,
     SearchIcon,
     UploadCloudIcon,
+    XIcon,
   } from "svelte-feather-icons";
   import Avatar from "../components/ui/Avatar.svelte";
   import Pdf from "../components/vectors/documents/Pdf.svelte";
   import Docx from "../components/vectors/documents/Docx.svelte";
+  import { onMount } from "svelte";
+  import PdfViewer from "../components/others/PdfViewer.svelte";
 
   const chats = [
     {
@@ -68,6 +74,48 @@
     "What is the monthly gross remuneration for a Software Developer at Unit U+2467 GmbH.",
     "What are the confidentiality agreements that an Employee must adhere to with respect to Ape Unit, KB21.",
   ];
+
+  const pages = [1, 2, 3, 4];
+
+  let documentScroll;
+  let scrollPercentage;
+
+  function parseScroll() {
+    const totalScrollableDistance =
+      documentScroll.scrollHeight - documentScroll.clientHeight;
+    scrollPercentage =
+      (documentScroll.scrollTop / totalScrollableDistance) * 100;
+  }
+
+  let currentIntersection = 1;
+
+  const handleLoad = (e) => {
+    // Select the elements you want to observe
+    const elements = document.querySelectorAll("#doc-page");
+
+    elements.forEach((element) => {
+      observer.observe(element);
+    });
+  };
+
+  const handleIntersection = (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        currentIntersection = Number(entry.target.dataset.page);
+      }
+    });
+  };
+
+  let observer;
+
+  onMount(() => {
+    observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.3, // Adjust the threshold as needed
+    });
+    return () => {
+      observer.disconnect();
+    };
+  });
 </script>
 
 <svelte:head>
@@ -77,7 +125,7 @@
 
 <section class="flex w-full">
   <div
-    class="w-[400px] h-screen border-t border-b flex flex-col border-r border-slate-300"
+    class="w-[400px] h-screen bg-white border-t border-b flex flex-col border-r border-slate-300"
   >
     <div class="px-2 py-2 w-full border-b border-slate-300">
       <div class="flex items-center w-full justify-between gap-2">
@@ -227,9 +275,11 @@
   <div
     class="w-full flex border-t border-slate-300 border-b items-center h-screen"
   >
-    <div class="w-[55%] flex flex-col border-r h-full border-slate-300">
+    <div
+      class="w-[55%] relative flex flex-col border-r h-full border-slate-300"
+    >
       <div
-        class="flex items-center px-4 justify-between border-b border-slate-300 py-[10.5px]"
+        class="flex bg-white items-center px-4 justify-between border-b border-slate-300 py-[10.5px]"
       >
         <div class="flex gap-3 items-center">
           <svelte:component
@@ -257,9 +307,68 @@
           <MoreVerticalIcon class="text-slate-700" size="15" />
         </a>
       </div>
-      <div class="flex-1 bg-opacity-50 bg-slate-200" />
+      <div
+        style="width: {scrollPercentage}%;"
+        class="h-[3px] rounded-sm z-50 bg-primary absolute top-[49px]"
+      />
+      <div class="w-full z-50 absolute bottom-0 px-3 h-[55px]">
+        <div
+          class="w-[80%] mx-auto h-[45px]- py-2 shadow-md bg-opacity-80 backdrop-blur-sm rounded-[3px] bg-white border border-slate-300"
+        >
+          <div class="flex items-center px-2 w-full justify-between">
+            <a
+              class="h-7 w-7 -mr-[6px] flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+              href=""
+            >
+              <ListIcon class="text-slate-600" size="20" />
+            </a>
+            <div class="flex items-center gap-3">
+              <a href="">
+                <ChevronLeftIcon
+                  strokeWidth={2.5}
+                  size="16"
+                  class="text-slate-500"
+                />
+              </a>
+              <div
+                class="text-[12px] flex items-center gap-3 font-semibold text-slate-500"
+              >
+                <span
+                  class="h-7 w-9 rounded-[3px] flex justify-center items-center text-primary border border-indigo-300 bg-indigo-100"
+                  >{currentIntersection}</span
+                >
+                <span>/</span>
+                <span class="cursor-pointer">{pages.length}</span>
+              </div>
+              <a href="">
+                <ChevronRightIcon
+                  strokeWidth={2.5}
+                  size="16"
+                  class="text-slate-500"
+                />
+              </a>
+            </div>
+            <a
+              class="h-7 w-7 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+              href=""
+            >
+              <XIcon strokeWidth={2.5} size="16" class="text-slate-500" />
+            </a>
+          </div>
+        </div>
+      </div>
+      <div
+        on:scroll={parseScroll}
+        bind:this={documentScroll}
+        class="scrollbar- scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 bg-slate-200"
+      >
+        <div class="w-full h-full mb-2 border-r border-slate-300 p-4">
+          <PdfViewer onLoaded={handleLoad} />
+          <div class="h-[10px]" />
+        </div>
+      </div>
     </div>
-    <div class="w-[45%] flex h-full flex-col">
+    <div class="w-[45%] bg-white flex h-full flex-col">
       <div
         class="flex items-center px-4 justify-between border-b border-slate-300 py-[10.5px]"
       >

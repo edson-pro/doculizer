@@ -7,6 +7,9 @@ import accessGoogleDoc from "./utils/accessGoogleDoc";
 import fs from "fs";
 import shortid from "shortid";
 import path from "path";
+import markdownpdf from "markdown-pdf";
+import mammoth from "mammoth";
+
 function getFileNameFromPath(filePath) {
   return path.basename(filePath);
 }
@@ -54,6 +57,26 @@ app.get("/upload", async (req, res) => {
   await generateAndStoreEmbending(content, { chat_id: 5 });
 
   res.json({ chat });
+});
+
+//
+app.get("/preview", async (req, res) => {
+  const docxFilePath = "uploads/doc-sample.docx";
+  const docxFile = fs.readFileSync(docxFilePath);
+
+  return mammoth
+    .convertToHtml({ buffer: docxFile })
+    .then((result) => {
+      const html = result.value;
+
+      // Save the HTML to a file
+      fs.writeFileSync("output.html", html);
+
+      console.log("Conversion completed!");
+    })
+    .catch((error) => {
+      console.error("Conversion error:", error);
+    });
 });
 
 app.get("/upload-google-doc", async (req, res) => {
