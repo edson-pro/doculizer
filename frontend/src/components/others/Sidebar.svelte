@@ -1,12 +1,14 @@
 <script lang="ts">
   // @ts-nocheck
   import {
+    ClockIcon,
     FileIcon,
     GridIcon,
     LogOutIcon,
     MoreHorizontalIcon,
     MoreVerticalIcon,
     PlusIcon,
+    RefreshCcwIcon,
     SearchIcon,
     SettingsIcon,
     Trash2Icon,
@@ -18,12 +20,112 @@
   import { clickOutside } from "../../directives/clickOutside";
   import { scale } from "svelte/transition";
   import { linear } from "svelte/easing";
+  import * as modals from "@/stores/modals";
+  import Menu from "./Menu.svelte";
 
   export let hideSidebar;
-  export let chats;
-  export let handeCallapse;
+  export let handleCallapse;
 
   let showProfileDropdown = false;
+
+  const chats = [
+    {
+      type: "pdf",
+      title: "Developer contract",
+      status: "processed",
+      pages: 4,
+      createAt: new Date().toLocaleDateString("en-US", {
+        day: "2-digit",
+        year: "numeric",
+        month: "short",
+      }),
+    },
+    {
+      type: "pdf",
+      title: "Brockain 2 proposal",
+      status: "processed",
+      pages: 5,
+      createAt: new Date("11/02/2021").toLocaleDateString("en-US", {
+        day: "2-digit",
+        year: "numeric",
+        month: "short",
+      }),
+    },
+    {
+      type: "docx",
+      title: "Senior position assesment",
+      status: "processed",
+      pages: 5,
+      createAt: new Date("11/02/2021").toLocaleDateString("en-US", {
+        day: "2-digit",
+        year: "numeric",
+        month: "short",
+      }),
+    },
+  ];
+
+  const chatActions = [
+    {
+      title: "Clear History ",
+      icon: ClockIcon,
+      click: () => {
+        modals.open("confirm", {
+          confirm: () => {
+            console.log("Delete Chat history");
+          },
+          title: "Delete all chat history",
+          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+        });
+      },
+    },
+    { title: "Re-process document", icon: RefreshCcwIcon },
+    {
+      title: "Delete Document",
+      icon: Trash2Icon,
+      variant: "danger",
+      click: () => {
+        modals.open("confirm", {
+          confirm: () => {
+            console.log("Delete Document");
+          },
+          title: "Delete this Document",
+          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+        });
+      },
+    },
+  ];
+
+  const actions = [
+    {
+      title: "Clear conversations",
+      icon: Trash2Icon,
+      click: () => {
+        modals.open("confirm", {
+          confirm: () => {
+            console.log("Delete conversations");
+          },
+          title: "Delete all conversations",
+          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+        });
+      },
+    },
+    { title: "Settings", icon: SettingsIcon },
+    {
+      title: "Logout",
+      icon: LogOutIcon,
+      click: () => {
+        modals.open("confirm", {
+          confirm: () => {
+            console.log("Logout");
+          },
+          title: "Logout your account",
+          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+        });
+      },
+    },
+  ];
+
+  let activeActionChat = undefined;
 </script>
 
 <div
@@ -49,7 +151,7 @@
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
           on:click={() => {
-            hideSidebar = true;
+            handleCallapse();
           }}
           class="h-8 w-8 cursor-pointer flex items-center justify-center rounded-[3px] hover:bg-slate-200"
         >
@@ -97,8 +199,16 @@
               i === 0 ? "bg-slate-200 bg-opacity-50 " : ""
             } flex hover:bg-slate-200 ${
               hideSidebar ? "px-2" : "px-3"
-            } relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
+            } relative relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
           >
+            {#if activeActionChat === i}
+              <Menu
+                items={chatActions}
+                close={() => {
+                  activeActionChat = undefined;
+                }}
+              />
+            {/if}
             {#if i === 0}
               <div
                 class="w-[3px] absolute left-0 h-full rounded-r-lg bg-primary"
@@ -146,9 +256,13 @@
               {/if}
             </div>
             {#if !hideSidebar}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-missing-attribute -->
               <a
-                class="h-7 w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-100"
-                href=""
+                on:click={() => {
+                  activeActionChat = i;
+                }}
+                class="h-7 cursor-pointer w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
               >
                 <MoreVerticalIcon class="text-slate-700" size="14" />
               </a>
@@ -210,7 +324,7 @@
                   <a
                     on:click={(e) => {
                       showProfileDropdown = false;
-                      hideSidebar = false;
+                      action.click();
                     }}
                     class="flex cursor-pointer hover:bg-slate-100 rounded-[3px] my-1 items-center gap-2 py-2 px-2"
                   >

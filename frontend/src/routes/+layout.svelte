@@ -1,11 +1,11 @@
 <script>
-  import PdfViewer from "../components/others/PdfViewer.svelte";
+  import ModalManager from "@/components/modals/ModalManager.svelte";
   import "./styles.css";
 </script>
 
+<ModalManager />
 <div class="app">
   <main>
-    <!-- <PdfViewer /> -->
     <slot />
   </main>
 </div>

@@ -2,11 +2,11 @@
   import {
     ChevronLeftIcon,
     ChevronRightIcon,
+    ClockIcon,
     FileIcon,
     ListIcon,
-    LogOutIcon,
     MoreVerticalIcon,
-    SettingsIcon,
+    RefreshCcwIcon,
     Trash2Icon,
     XIcon,
   } from "svelte-feather-icons";
@@ -15,9 +15,11 @@
   import MarkdownViewier from "./MarkdownViewier.svelte";
   import { onMount } from "svelte";
   import Menu from "./Menu.svelte";
+  import * as modals from "@/stores/modals";
 
   export let hideSidebar;
   export let currentDoc;
+  export let handleCallapse;
 
   let currentIntersection = 1;
 
@@ -62,12 +64,37 @@
 
   const pages = [1, 2, 3, 4];
 
-  let showMenu = true;
+  let showMenu = false;
 
   const actions = [
-    { title: "Clear conversations", icon: Trash2Icon },
-    { title: "Settings", icon: SettingsIcon },
-    { title: "Logout", icon: LogOutIcon },
+    {
+      title: "Clear History ",
+      icon: ClockIcon,
+      click: () => {
+        modals.open("confirm", {
+          confirm: () => {
+            console.log("Delete Chat history");
+          },
+          title: "Delete all chat history",
+          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+        });
+      },
+    },
+    { title: "Re-process document", icon: RefreshCcwIcon },
+    {
+      title: "Delete Document",
+      icon: Trash2Icon,
+      variant: "danger",
+      click: () => {
+        modals.open("confirm", {
+          confirm: () => {
+            console.log("Delete Document");
+          },
+          title: "Delete this Document",
+          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+        });
+      },
+    },
   ];
 </script>
 
@@ -79,7 +106,7 @@
       {#if hideSidebar}
         <a
           on:click={() => {
-            hideSidebar = false;
+            handleCallapse();
           }}
           href="#"
           class="h-7 w-7 mr-3 flex items-center justify-center rounded-[3px] hover:bg-slate-200"

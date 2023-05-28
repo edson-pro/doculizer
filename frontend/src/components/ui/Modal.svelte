@@ -2,15 +2,16 @@
   import Button from "./Button.svelte";
   import CloseButton from "./CloseButton.svelte";
   import Overlay from "./Overlay.svelte";
-  import { fly } from "svelte/transition";
-  import { quintOut } from "svelte/easing";
-
+  import { scale } from "svelte/transition";
+  import { linear } from "svelte/easing";
   export let size = "lg";
   export let open: boolean = false;
   export let title: string = "";
   export let showDividers: boolean = false;
   export let close: any = null;
-  export let noFooter: boolean = false;
+  export let noPadding: boolean = false;
+  export let noBackground: boolean = false;
+  export let top: boolean = false;
 
   $: sizeClass = {
     xs: "max-w-[320px]",
@@ -23,12 +24,20 @@
   const handleClose = () => {
     close();
   };
+  function handleKeydown(event: any) {
+    if (event.code === "Escape" && open) {
+      event.preventDefault();
+      close();
+    }
+  }
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 {#if open}
   <div class="fixed z-[51] inset-0 overflow-y-hidden">
     <div
-      class="flex items-center mx-3 justify-center overflow-hidden min-h-screen pt-4 px-4 pb-20 text-center sm:block- sm:p-0"
+      class="flex items-start justify-center overflow-hidden min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
     >
       <Overlay fade click={handleClose} dark={true} blur />
       <span
@@ -37,28 +46,29 @@
       >
 
       <div
-        transition:fly={{
+        transition:scale={{
+          duration: 150,
           delay: 0,
-          duration: 300,
-          x: 0,
-          y: 100,
           opacity: 0,
-          easing: quintOut,
+          start: 0.95,
+          easing: linear,
         }}
-        class=" dark:bg-slate-900 bg-white relative inline-block rounded-[4px] shadow-xl transform transition-all my-8 align-middle w-full
+        class=" {noBackground
+          ? ''
+          : 'dark:bg-slate-900 bg-white shadow-xl'} relative inline-block rounded-[3px] transform transition-all my-8 align-middle w-full
                 {sizeClass}
               "
       >
         <slot name="header">
           {#if title}
             <div
-              class="{showDividers ? 'border-b px-4  py-[6px]' : 'px-5  py-3'}
+              class="{showDividers ? 'border-b px-4  py-3' : 'px-5  py-3'}
                        rounded-t-md border-slate-100 dark:border-slate-800
                     "
             >
               <div class="flex justify-between items-center">
                 <h4
-                  class="font-semibold dark:font-medium text-[13px] text-slate-800 dark:text-slate-200"
+                  class="font-semibold dark:font-medium text-[14px] text-slate-800 dark:text-slate-200"
                 >
                   {title}
                 </h4>
@@ -68,10 +78,7 @@
           {/if}
         </slot>
 
-        <div
-          class="px-4 py-2 overflow-y-auto max-h-[70vh]"
-          id="modalDescription"
-        >
+        <div class={noPadding ? "" : "px-4 py-2"} id="modalDescription">
           <slot name="body">
             <div
               class="h-[100px] w-full flex text-sm capitalize font-medium text-slate-400 justify-center items-center"
@@ -81,20 +88,19 @@
           </slot>
         </div>
 
-        {#if !noFooter}
-          <div
-            class="
-                  {showDividers ? 'border-t ' : ''}
-                  px-4 py-2 border-slate-200 dark:border-slate-800
+        <div
+          class="{showDividers ? 'border-t ' : ''} {noPadding
+            ? ''
+            : ' px-4 py-2 '}
+                 border-slate-200 dark:border-slate-800
                 "
-          >
-            <slot name="footer">
-              <div class="w-full flex items-center justify-end">
-                <Button size={"sm"} click={handleClose}>Close Modal</Button>
-              </div>
-            </slot>
-          </div>
-        {/if}
+        >
+          <slot name="footer">
+            <div class="w-full flex items-center justify-end">
+              <Button size={"sm"} click={handleClose}>Close Modal</Button>
+            </div>
+          </slot>
+        </div>
       </div>
     </div>
   </div>

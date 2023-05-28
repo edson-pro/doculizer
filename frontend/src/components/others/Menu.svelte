@@ -30,15 +30,14 @@
         <a
           on:click={(e) => {
             close();
+            action.click();
           }}
-          class="flex cursor-pointer hover:bg-slate-100 rounded-[3px] my-1 items-center gap-2 py-2 px-2"
+          class="{action.variant === 'danger'
+            ? 'text-red-500 hover:bg-red-100 '
+            : 'text-slate-600 hover:bg-slate-100 '} flex cursor-pointer rounded-[3px] my-1 items-center gap-3 py-2 px-3"
         >
-          <svelte:component
-            this={action.icon}
-            class="text-slate-600"
-            size={"16"}
-          />
-          <span class="text-[13px] text-slate-600 font-medium capitalize">
+          <svelte:component this={action.icon} size={"15"} />
+          <span class="text-[13px] font-medium capitalize">
             {action.title}
           </span>
         </a>

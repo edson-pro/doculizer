@@ -1,13 +1,12 @@
-import { writable } from 'svelte/store';
+import { writable } from "svelte/store";
 
 const createModalStore = () => {
-  const { subscribe, set } = writable<string | undefined>();
-
+  const { subscribe, set } = writable<any>();
   return {
     subscribe,
-    open: (id: string) => set(id),
+    open: (id: string, payload) => set({ id: id, payload }),
     close: () => set(undefined),
-    show: { subscribe }
+    show: { subscribe },
   };
 };
 const { show, open, close } = createModalStore();
