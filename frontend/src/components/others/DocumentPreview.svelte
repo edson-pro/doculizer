@@ -17,9 +17,15 @@
   import Menu from "./Menu.svelte";
   import * as modals from "@/stores/modals";
 
-  export let hideSidebar;
+  import { uiState, setUiState } from "@/stores/layout";
+
+  const handleCallapse = () => {
+    setUiState({ ...$uiState, hideSidebar: false });
+  };
+
+  $: hideSidebar = $uiState.hideSidebar;
+
   export let currentDoc;
-  export let handleCallapse;
 
   let currentIntersection = 1;
 

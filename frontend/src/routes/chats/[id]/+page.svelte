@@ -1,11 +1,7 @@
 <script>
   import Chat from "@/components/others/Chat.svelte";
   import DocumentPreview from "@/components/others/DocumentPreview.svelte";
-  import { hideSidebar, setHideSidebar } from "@/stores/layout";
 
-  const handleCallapse = () => {
-    setHideSidebar($hideSidebar.hideSidebar);
-  };
   const currentDoc = {
     type: "docx",
     title: "Senior position assesment",
@@ -19,13 +15,15 @@
   };
 </script>
 
+<svelte:head>
+  <title>
+    {currentDoc.title}
+  </title>
+</svelte:head>
+
 <div
   class="w-full flex border-t border-slate-300 border-b items-center h-screen"
 >
-  <DocumentPreview
-    {handleCallapse}
-    {currentDoc}
-    hideSidebar={$hideSidebar.hideSidebar}
-  />
+  <DocumentPreview {currentDoc} />
   <Chat />
 </div>

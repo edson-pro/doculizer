@@ -22,14 +22,26 @@
   import { linear } from "svelte/easing";
   import * as modals from "@/stores/modals";
   import Menu from "./Menu.svelte";
+  import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
 
-  export let hideSidebar;
-  export let handleCallapse;
+  import { uiState, setUiState } from "@/stores/layout";
+  import LoadingOverlay from "../ui/LoadingOverlay.svelte";
+
+  const handleCallapse = () => {
+    setUiState({ ...$uiState, hideSidebar: true });
+  };
+
+  $: hideSidebar = $uiState.hideSidebar;
+
+  // export let hideSidebar;
+  // export let handleCallapse;
 
   let showProfileDropdown = false;
 
   const chats = [
     {
+      id: 1,
       type: "pdf",
       title: "Developer contract",
       status: "processed",
@@ -41,6 +53,7 @@
       }),
     },
     {
+      id: 2,
       type: "pdf",
       title: "Brockain 2 proposal",
       status: "processed",
@@ -52,6 +65,7 @@
       }),
     },
     {
+      id: 3,
       type: "docx",
       title: "Senior position assesment",
       status: "processed",
@@ -125,6 +139,8 @@
     },
   ];
 
+  let inputRef;
+  const handleUpload = (e) => {};
   let activeActionChat = undefined;
 </script>
 
@@ -135,7 +151,7 @@
 >
   <div class="px-2 py-2 w-full border-b border-slate-300">
     <div class="flex items-center w-full justify-between gap-2">
-      <a href="#">
+      <a href="/chats">
         <img
           class="h-8 w-8 rounded-[3px]"
           src="https://play-lh.googleusercontent.com/bvaTHCfTJohpSWFgjXouNkNsVFnC5ssfdaurQzCvPnzBtflEwOEi5vq2vopY4Miv4lI"
@@ -194,12 +210,19 @@
     <div class="flex-1 flex flex-col border-t border-slate-200 h-full">
       <div class="px-0 h-full">
         {#each chats as chat, i}
+          <!-- svelte-ignore missing-declaration -->
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
+            on:click={() => {
+              goto(`/chats/${chat.id}`);
+            }}
             class={`${
-              i === 0 ? "bg-slate-200 bg-opacity-50 " : ""
+              `/chats/${chat.id}` === $page.url.pathname
+                ? "bg-slate-200 bg-opacity-50 "
+                : ""
             } flex hover:bg-slate-200 ${
               hideSidebar ? "px-2" : "px-3"
-            } relative relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
+            } relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
           >
             {#if activeActionChat === i}
               <Menu
@@ -209,7 +232,7 @@
                 }}
               />
             {/if}
-            {#if i === 0}
+            {#if `/chats/${chat.id}` === $page.url.pathname}
               <div
                 class="w-[3px] absolute left-0 h-full rounded-r-lg bg-primary"
               />
@@ -259,7 +282,8 @@
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
-                on:click={() => {
+                on:click={(e) => {
+                  e.stopPropagation();
                   activeActionChat = i;
                 }}
                 class="h-7 cursor-pointer w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
@@ -270,25 +294,32 @@
           </div>
         {/each}
       </div>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        class="bg-slate-100 cursor-pointer flex {!hideSidebar
+        class="bg-slate-100 relative cursor-pointer flex {!hideSidebar
           ? 'm-3 py-5'
           : 'm-2 py-2'} text-center border border-slate-300 border-dashed rounded-[3px] flex-col justify-center items-center gap-3"
       >
+        <!-- <LoadingOverlay /> -->
+        <input bind:this={inputRef} type="file" class="hidden" name="" id="" />
         <UploadCloudIcon
           class="text-slate-600"
           size={!hideSidebar ? "20" : "16"}
         />
         {#if !hideSidebar}
+          <!-- svelte-ignore a11y-invalid-attribute -->
+          <!-- svelte-ignore a11y-missing-attribute -->
           <a
-            href=""
+            on:click={(e) => {
+              inputRef.click();
+            }}
             class="flex items-center gap-2 text-[13px] font-semibold text-primary"
           >
             <PlusIcon strokeWidth={3} size="14" />
             <span>Create New chat</span>
           </a>
           <p class="text-[13px] capitalize text-slate-500 font-medium">
-            Upload documents here.
+            click to Upload a document.
           </p>
         {/if}
       </div>

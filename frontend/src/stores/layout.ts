@@ -1,15 +1,16 @@
 import { writable } from "svelte/store";
 
 const createLayoutStore = () => {
-  const { subscribe, set } = writable<any>({ hideSidebar: false });
+  const { subscribe, set, update } = writable<any>({ hideSidebar: false });
   return {
     subscribe,
-    setHideSidebar: (e) => {
-      set({ hideSidebar: e });
+    setUiState: (e) => {
+      console.log(e);
+      set(e);
     },
-    hideSidebar: { subscribe },
+    uiState: { subscribe },
   };
 };
-const { setHideSidebar, hideSidebar } = createLayoutStore();
+const { uiState, setUiState } = createLayoutStore();
 
-export { setHideSidebar, hideSidebar };
+export { uiState, setUiState };
