@@ -27,7 +27,7 @@
 
   $: sizeClass = {
     xs: "h-[26px] w-[26px] text-[10px]",
-    sm: "h-[30px] w-[30px] text-[12px]",
+    sm: "h-[30px] w-[32px] text-[12px]",
     md: "h-[38px] w-[38px]",
     lg: "h-[56px] w-[56px]",
     xl: "h-[84px] w-[84px]",

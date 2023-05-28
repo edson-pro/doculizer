@@ -19,6 +19,11 @@
   import Docx from "../components/vectors/documents/Docx.svelte";
   import { onMount } from "svelte";
   import PdfViewer from "../components/others/PdfViewer.svelte";
+  import MarkdownViewier from "../components/others/MarkdownViewier.svelte";
+  import DocxPreview from "../components/others/DocxPreview.svelte";
+  import ChatList from "../components/others/chatList.svelte";
+  import Sidebar from "../components/others/Sidebar.svelte";
+  import DocumentPreview from "../components/others/DocumentPreview.svelte";
 
   const chats = [
     {
@@ -75,47 +80,7 @@
     "What are the confidentiality agreements that an Employee must adhere to with respect to Ape Unit, KB21.",
   ];
 
-  const pages = [1, 2, 3, 4];
-
-  let documentScroll;
-  let scrollPercentage;
-
-  function parseScroll() {
-    const totalScrollableDistance =
-      documentScroll.scrollHeight - documentScroll.clientHeight;
-    scrollPercentage =
-      (documentScroll.scrollTop / totalScrollableDistance) * 100;
-  }
-
-  let currentIntersection = 1;
-
-  const handleLoad = (e) => {
-    // Select the elements you want to observe
-    const elements = document.querySelectorAll("#doc-page");
-
-    elements.forEach((element) => {
-      observer.observe(element);
-    });
-  };
-
-  const handleIntersection = (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        currentIntersection = Number(entry.target.dataset.page);
-      }
-    });
-  };
-
-  let observer;
-
-  onMount(() => {
-    observer = new IntersectionObserver(handleIntersection, {
-      threshold: 0.3, // Adjust the threshold as needed
-    });
-    return () => {
-      observer.disconnect();
-    };
-  });
+  let hideSidebar = false;
 </script>
 
 <svelte:head>
@@ -124,250 +89,17 @@
 </svelte:head>
 
 <section class="flex w-full">
-  <div
-    class="w-[400px] h-screen bg-white border-t border-b flex flex-col border-r border-slate-300"
-  >
-    <div class="px-2 py-2 w-full border-b border-slate-300">
-      <div class="flex items-center w-full justify-between gap-2">
-        <a href="#">
-          <img
-            class="h-8 w-8 rounded-[3px]"
-            src="https://play-lh.googleusercontent.com/bvaTHCfTJohpSWFgjXouNkNsVFnC5ssfdaurQzCvPnzBtflEwOEi5vq2vopY4Miv4lI"
-            alt=""
-          />
-        </a>
-        <div class="flex items-center gap-2">
-          <GridIcon size="18" />
-          <span class="font-semibold text-[13.5px]"> Documents </span>
-        </div>
-        <a
-          href="#"
-          class="h-8 w-8 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="tabler-icon tabler-icon-arrow-bar-left"
-            ><path d="M4 12l10 0" /><path d="M4 12l4 4" /><path
-              d="M4 12l4 -4"
-            /><path d="M20 4l0 16" /></svg
-          >
-        </a>
-      </div>
-    </div>
-    <div class="flex h-full justify-between flex-col">
-      <div
-        class="flex border mx-2 my-2 border-slate-200 bg-opacity-30 items-center gap-1 px-3 py-[8px] bg-slate-200 rounded-[3px]"
-      >
-        <SearchIcon size="16" class="text-slate-700" />
-        <input
-          type="text"
-          placeholder="Search here.."
-          class=" bg-transparent px-2 w-full font-medium text-slate-600 text-[13px] outline-none"
-          name=""
-          id=""
-        />
-      </div>
-      <div class="flex-1 flex flex-col border-t border-slate-200 h-full">
-        <div class="px-0 h-full">
-          {#each chats as chat, i}
-            <div
-              class={`${
-                i === 0 ? "bg-slate-200 bg-opacity-50 " : ""
-              } flex hover:bg-slate-200 px-3 relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
-            >
-              {#if i === 0}
-                <div
-                  class="w-[3px] absolute left-0 h-full rounded-r-lg bg-primary"
-                />
-              {/if}
-              <div class="flex items-center gap-2">
-                <div
-                  class={`h-10 w-10 flex items-center rounded-[3px] justify-center ${
-                    chat.type === "pdf"
-                      ? "bg-red-100 border-red-200 border "
-                      : chat.type === "docx"
-                      ? "bg-blue-100 border-blue-200 border "
-                      : ""
-                  }`}
-                >
-                  <svelte:component
-                    this={chat.type === "pdf"
-                      ? Pdf
-                      : chat.type === "docx"
-                      ? Docx
-                      : FileIcon}
-                  />
-                </div>
-                <div class="flex flex-col gap-[6px]">
-                  <h4
-                    class="text-[12.5px] truncate font-semibold text-slate-800 capitalize"
-                  >
-                    {chat.title}
-                  </h4>
-                  <p
-                    class="text-[11.8px] flex gap-2 items-center font-medium text-slate-500"
-                  >
-                    <span>
-                      {chat.pages} pages
-                    </span>
-                    <span class="font-bold">-</span>
-                    <span>
-                      {chat.createAt}
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <a
-                class="h-7 w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-100"
-                href=""
-              >
-                <MoreVerticalIcon class="text-slate-700" size="14" />
-              </a>
-            </div>
-          {/each}
-        </div>
-        <div
-          class="bg-slate-100 cursor-pointer flex py-5 m-3 text-center border border-slate-300 border-dashed rounded-[3px] flex-col justify-center items-center gap-3"
-        >
-          <UploadCloudIcon class="text-slate-600" size="20" />
-          <a
-            href=""
-            class="flex items-center gap-2 text-[13px] font-semibold text-primary"
-          >
-            <PlusIcon strokeWidth={3} size="14" />
-            <span>Create New chat</span>
-          </a>
-          <p class="text-[13px] capitalize text-slate-500 font-medium">
-            Upload documents here.
-          </p>
-        </div>
-      </div>
-      <div class="border-t border-slate-200 pt-0">
-        <div
-          class="flex items-center mx-[6px]- justify-between px-3 py-[6px] cursor-pointer rounded-[3px]- hover:bg-slate-200 hover:bg-opacity-30 hover:border-slate-200- border border-transparent"
-        >
-          <div class="flex items-center gap-3">
-            <Avatar size="xs" name="Ntwali Edson" />
-            <div>
-              <p class="font-medium text-[13.5px] capitalize text-slate-700">
-                Ntwali edson
-              </p>
-            </div>
-          </div>
-          <a
-            class="h-8 w-8 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
-            href=""
-          >
-            <MoreHorizontalIcon size="16" />
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+  <Sidebar
+    handeCallapse={() => {
+      hideSidebar = !hideSidebar;
+    }}
+    {chats}
+    {hideSidebar}
+  />
   <div
     class="w-full flex border-t border-slate-300 border-b items-center h-screen"
   >
-    <div
-      class="w-[55%] relative flex flex-col border-r h-full border-slate-300"
-    >
-      <div
-        class="flex bg-white items-center px-4 justify-between border-b border-slate-300 py-[10.5px]"
-      >
-        <div class="flex gap-3 items-center">
-          <svelte:component
-            this={currentDoc.type === "pdf"
-              ? Pdf
-              : currentDoc.type === "docx"
-              ? Docx
-              : FileIcon}
-          />
-          <div class="flex items-center gap-2">
-            <h4 class="font-semibold capitalize text-[13px]">
-              {currentDoc.title}
-            </h4>
-            <span
-              class="text-[10px] font-semibold text-blue-400 bg-blue-100 py-[2px] rounded-full px-2"
-            >
-              .DOCX
-            </span>
-          </div>
-        </div>
-        <a
-          class="h-7 w-7 -mr-[6px] flex items-center justify-center rounded-[3px] hover:bg-slate-100"
-          href=""
-        >
-          <MoreVerticalIcon class="text-slate-700" size="15" />
-        </a>
-      </div>
-      <div
-        style="width: {scrollPercentage}%;"
-        class="h-[3px] rounded-sm z-50 bg-primary absolute top-[49px]"
-      />
-      <div class="w-full z-50 absolute bottom-0 px-3 h-[55px]">
-        <div
-          class="w-[80%] mx-auto h-[45px]- py-2 shadow-md bg-opacity-80 backdrop-blur-sm rounded-[3px] bg-white border border-slate-300"
-        >
-          <div class="flex items-center px-2 w-full justify-between">
-            <a
-              class="h-7 w-7 -mr-[6px] flex items-center justify-center rounded-[3px] hover:bg-slate-200"
-              href=""
-            >
-              <ListIcon class="text-slate-600" size="20" />
-            </a>
-            <div class="flex items-center gap-3">
-              <a href="">
-                <ChevronLeftIcon
-                  strokeWidth={2.5}
-                  size="16"
-                  class="text-slate-500"
-                />
-              </a>
-              <div
-                class="text-[12px] flex items-center gap-3 font-semibold text-slate-500"
-              >
-                <span
-                  class="h-7 w-9 rounded-[3px] flex justify-center items-center text-primary border border-indigo-300 bg-indigo-100"
-                  >{currentIntersection}</span
-                >
-                <span>/</span>
-                <span class="cursor-pointer">{pages.length}</span>
-              </div>
-              <a href="">
-                <ChevronRightIcon
-                  strokeWidth={2.5}
-                  size="16"
-                  class="text-slate-500"
-                />
-              </a>
-            </div>
-            <a
-              class="h-7 w-7 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
-              href=""
-            >
-              <XIcon strokeWidth={2.5} size="16" class="text-slate-500" />
-            </a>
-          </div>
-        </div>
-      </div>
-      <div
-        on:scroll={parseScroll}
-        bind:this={documentScroll}
-        class="scrollbar- scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 bg-slate-200"
-      >
-        <div class="w-full h-full mb-2 border-r border-slate-300 p-4">
-          <PdfViewer onLoaded={handleLoad} />
-          <div class="h-[10px]" />
-        </div>
-      </div>
-    </div>
+    <DocumentPreview {currentDoc} {hideSidebar} />
     <div class="w-[45%] bg-white flex h-full flex-col">
       <div
         class="flex items-center px-4 justify-between border-b border-slate-300 py-[10.5px]"
@@ -399,7 +131,7 @@
           >
         </a>
       </div>
-      <div class="flex-1 h-full bg-blue-200-">
+      <!-- <div class="flex-1 h-full bg-blue-200-">
         <div class="px-3 h-full my-3">
           <div class="flex h-full justify-center flex-col">
             <div
@@ -449,7 +181,7 @@
                 options below:
               </h4>
             </div>
-            <div class="flex my-3 mx-4 flex-col gap-3">
+            <div class="flex my-3 max-w-lg mx-auto mx-4 flex-col gap-3">
               {#each suggestions as suggestion}
                 <a
                   href="#"
@@ -462,7 +194,8 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
+      <ChatList />
       <div
         class="px-3 border-t border-slate-300 bg-slate-100 bg-opacity-60 pt-[10px] pb-1"
       >

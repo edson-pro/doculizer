@@ -18,6 +18,17 @@ module.exports = {
         sm: { max: "639px" },
       },
     },
+    typography: {
+      default: {
+        css: {
+          pre: false,
+          code: false,
+          "pre code": false,
+          "code::before": false,
+          "code::after": false,
+        },
+      },
+    },
   },
   plugins: [
     require("@tailwindcss/typography"),
