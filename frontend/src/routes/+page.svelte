@@ -2,6 +2,33 @@
   import { goto } from "$app/navigation";
   import Button from "@/components/ui/Button.svelte";
   import Google from "@/components/vectors/Google.svelte";
+  import client from "@/lib/client";
+  import { addToast } from "@/stores/toast";
+  import { auth } from "@/stores/auth";
+
+  let googleLoading = false;
+
+  const handleLogin = () => {
+    googleLoading = true;
+    return client
+      .auth()
+      .signWithGoogle({
+        redirect: "/chats",
+      })
+      .then((e) => {
+        setTimeout(() => {
+          googleLoading = false;
+        }, 2000);
+      })
+      .catch((e) => {
+        googleLoading = false;
+        addToast({
+          type: "success",
+          title: "Something went wrong.",
+          message: e.message,
+        });
+      });
+  };
 </script>
 
 <svelte:head>
@@ -13,7 +40,7 @@
   <div
     class="max-w-2xl py-36 mx-auto flex flex-col justify-center items-center gap-4"
   >
-    <h4 class="font-semibold text-2xl leading-7 text-center">
+    <h4 class="font-semibold text-2xl leading-10 text-center">
       Chat with documents. Get instant answers with cited sources.
     </h4>
     <p class="font-medium text-[14px] text-slate-600 leading-7 text-center">
@@ -21,9 +48,8 @@
       extract, locate, and summarize information from documents.
     </p>
     <Button
-      click={() => {
-        goto("/chats");
-      }}
+      click={handleLogin}
+      loading={googleLoading}
       customClass="!bg-white"
       variant="default"
       leftIcon={Google}>Continue With Google</Button

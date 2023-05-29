@@ -25,58 +25,11 @@ app.get("/upload", async (req, res) => {
     name: "Dev contract",
     type: "markdown",
   };
-  const filePath = "uploads/doc-sample.md";
-  const fsFlie = fs.readFileSync(filePath);
-
-  const fileName =
-    "documents/" + shortid.generate() + "-" + getFileNameFromPath(filePath);
-
-  const { data: uploadedFile } = await supabase.storage
-    .from("documents")
-    .upload(fileName, fsFlie, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-
-  const { data } = supabase.storage
-    .from("documents")
-    .getPublicUrl(uploadedFile?.path);
-
-  const chat = await supabase
-    .from("chats")
-    .insert({
-      user_id: "f00e76e2-df7f-437c-883a-d739af279cb3",
-      title: file.name,
-      type: file.type,
-      file: data.publicUrl,
-    })
-    .select()
-    .single();
 
   const content = await generateContent("uploads/doc-sample.md", "markdown");
   await generateAndStoreEmbending(content, { chat_id: 5 });
 
   res.json({ chat });
-});
-
-//
-app.get("/preview", async (req, res) => {
-  const docxFilePath = "uploads/doc-sample.docx";
-  const docxFile = fs.readFileSync(docxFilePath);
-
-  return mammoth
-    .convertToHtml({ buffer: docxFile })
-    .then((result) => {
-      const html = result.value;
-
-      // Save the HTML to a file
-      fs.writeFileSync("output.html", html);
-
-      console.log("Conversion completed!");
-    })
-    .catch((error) => {
-      console.error("Conversion error:", error);
-    });
 });
 
 app.get("/upload-google-doc", async (req, res) => {

@@ -75,15 +75,23 @@
         </div>
       {/if}
 
-      <div class="flex flex-col items-start gap-[6px]">
-        <h4 class="dark:text-white text-slate-800 font-medium text-[13.5px]">
+      <div
+        class="flex flex-col items-start {message
+          ? 'gap-[6px]'
+          : 'justify-center'} "
+      >
+        <h4
+          class="dark:text-white first-letter:capitalize text-slate-800 font-medium text-[13.5px]"
+        >
           {title}
         </h4>
-        <p
-          class="dark:text-slate-400 first-letter:capitalize text-slate-500 font-normal text-[13px]"
-        >
-          {message}
-        </p>
+        {#if message}
+          <p
+            class="dark:text-slate-400 first-letter:capitalize text-slate-500 font-normal text-[13px]"
+          >
+            {message}
+          </p>
+        {/if}
       </div>
     </div>
     {#if dismissible}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  // @ts-nocheck
   import {
     ClockIcon,
     FileIcon,
@@ -16,6 +15,7 @@
   } from "svelte-feather-icons";
   import Pdf from "../vectors/documents/Pdf.svelte";
   import Docx from "../vectors/documents/Docx.svelte";
+  import Markdown from "../vectors/documents/Markdown.svelte";
   import Avatar from "../ui/Avatar.svelte";
   import { clickOutside } from "../../directives/clickOutside";
   import { scale } from "svelte/transition";
@@ -27,6 +27,16 @@
 
   import { uiState, setUiState } from "@/stores/layout";
   import LoadingOverlay from "../ui/LoadingOverlay.svelte";
+  import { auth, logout } from "@/stores/auth";
+  import Skeleton from "../ui/Skeleton.svelte";
+  import client from "@/lib/client";
+  import { useQuery, useQueryClient } from "@sveltestack/svelte-query";
+  import Chat from "./Chat.svelte";
+  import CircleSpinner from "../ui/CircleSpinner.svelte";
+  import { chatsQueryKey } from "@/stores/queryKeys";
+  import createChat from "@/utils/createChat";
+  import { addToast } from "@/stores/toast";
+  import ChatItem from "./ChatItem.svelte";
 
   const handleCallapse = () => {
     setUiState({ ...$uiState, hideSidebar: true });
@@ -39,86 +49,42 @@
 
   let showProfileDropdown = false;
 
-  const chats = [
-    {
-      id: 1,
-      type: "pdf",
-      title: "Developer contract",
-      status: "processed",
-      pages: 4,
-      createAt: new Date().toLocaleDateString("en-US", {
-        day: "2-digit",
-        year: "numeric",
-        month: "short",
-      }),
-    },
-    {
-      id: 2,
-      type: "pdf",
-      title: "Brockain 2 proposal",
-      status: "processed",
-      pages: 5,
-      createAt: new Date("11/02/2021").toLocaleDateString("en-US", {
-        day: "2-digit",
-        year: "numeric",
-        month: "short",
-      }),
-    },
-    {
-      id: 3,
-      type: "docx",
-      title: "Senior position assesment",
-      status: "processed",
-      pages: 5,
-      createAt: new Date("11/02/2021").toLocaleDateString("en-US", {
-        day: "2-digit",
-        year: "numeric",
-        month: "short",
-      }),
-    },
-  ];
-
-  const chatActions = [
-    {
-      title: "Clear History ",
-      icon: ClockIcon,
-      click: () => {
-        modals.open("confirm", {
-          confirm: () => {
-            console.log("Delete Chat history");
-          },
-          title: "Delete all chat history",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
-        });
-      },
-    },
-    { title: "Re-process document", icon: RefreshCcwIcon },
-    {
-      title: "Delete Document",
-      icon: Trash2Icon,
-      variant: "danger",
-      click: () => {
-        modals.open("confirm", {
-          confirm: () => {
-            console.log("Delete Document");
-          },
-          title: "Delete this Document",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
-        });
-      },
-    },
-  ];
+  interface Chat {
+    id: number;
+    type: string;
+    title: string;
+    status: string;
+    pages: number;
+    create_at: string;
+  }
 
   const actions = [
     {
-      title: "Clear conversations",
+      title: "Delete all documents",
       icon: Trash2Icon,
       click: () => {
         modals.open("confirm", {
           confirm: () => {
-            console.log("Delete conversations");
+            modals.update("confirm", { loading: true });
+            return client
+              .collection("chats")
+              .where("user_id", "==", user.id)
+              .delete()
+              .then((e) => {
+                queryClient.invalidateQueries($chatsQueryKey);
+                setTimeout(() => {
+                  modals.update("confirm", { loading: false });
+                  modals.close();
+                  addToast({
+                    message: "All document chats was deleted",
+                    type: "success",
+                    title: "Deleted succesfully",
+                  });
+                  console.log("Deleted Documents");
+                }, 500);
+              });
           },
-          title: "Delete all conversations",
+          title: "Delete all documents",
           desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
         });
       },
@@ -130,7 +96,18 @@
       click: () => {
         modals.open("confirm", {
           confirm: () => {
-            console.log("Logout");
+            modals.update("confirm", { loading: true });
+            setTimeout(() => {
+              return client
+                .auth()
+                .logout()
+                .then((e) => {
+                  modals.close();
+                  modals.update("confirm", { loading: false });
+                  logout();
+                  goto("/");
+                });
+            }, 2000);
           },
           title: "Logout your account",
           desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
@@ -142,6 +119,85 @@
   let inputRef;
   const handleUpload = (e) => {};
   let activeActionChat = undefined;
+
+  $: user = $auth.user;
+  $: authLoading = $auth.loading;
+
+  const fetcher = ({ queryKey }) => {
+    const filters = queryKey[1];
+    const q = client
+      .collection("chats")
+      .where("user_id", "==", "f00e76e2-df7f-437c-883a-d739af279cb3");
+
+    if (filters?.search) q.search("title", filters?.search);
+
+    return q.get().then((e: any) =>
+      e.map((e) => {
+        return {
+          ...e,
+          created_at: new Date(e?.created_at).toLocaleDateString("en-US", {
+            day: "2-digit",
+            year: "numeric",
+            month: "short",
+          }),
+        };
+      })
+    );
+  };
+
+  let searchText = "";
+
+  let timer;
+
+  const debounce = (v) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      searchText = v;
+    }, 1000);
+  };
+
+  $: queryKeys = ["chats", { search: searchText }];
+
+  $: chatsQueryKey.set(queryKeys);
+
+  $: chatsResult = useQuery({
+    queryKey: ["chats", { search: searchText }],
+    queryFn: fetcher,
+    enabled: user && !authLoading,
+    keepPreviousData: true,
+  });
+  let uploadingFile = false;
+
+  const queryClient = useQueryClient();
+
+  const handleChange = async (e) => {
+    uploadingFile = true;
+    const file = e.target.files[0];
+
+    return createChat({ file, user })
+      .then((data) => {
+        uploadingFile = false;
+        addToast({
+          title: "Chat created success",
+          message: "You can start chatting with your file.",
+          type: "success",
+        });
+        queryClient.invalidateQueries($chatsQueryKey);
+        setTimeout(() => {
+          goto(`/chats/${data.id}`);
+        }, 1000);
+      })
+      .catch((e) => {
+        uploadingFile = false;
+        addToast({
+          title: e.message,
+          type: "danger",
+        });
+        console.log(e);
+      });
+  };
+
+  $: chats = $chatsResult?.data || [];
 </script>
 
 <div
@@ -152,11 +208,7 @@
   <div class="px-2 py-2 w-full border-b border-slate-300">
     <div class="flex items-center w-full justify-between gap-2">
       <a href="/chats">
-        <img
-          class="h-8 w-8 rounded-[3px]"
-          src="https://play-lh.googleusercontent.com/bvaTHCfTJohpSWFgjXouNkNsVFnC5ssfdaurQzCvPnzBtflEwOEi5vq2vopY4Miv4lI"
-          alt=""
-        />
+        <img class="h-8 w-8 rounded-[3px]" src="/images/logo.png" alt="" />
       </a>
       {#if !hideSidebar}
         <div class="flex items-center gap-2">
@@ -194,114 +246,75 @@
     <div
       class="flex border {hideSidebar
         ? 'cursor-pointer  px-2 py-2'
-        : ' px-3 py-[8px]'} mx-2 my-2 border-slate-200 bg-opacity-30 items-center gap-1 bg-slate-200 rounded-[3px]"
+        : ' px-3 py-[8px]'} mx-2 my-2 focus-within:border-primary border-slate-200 bg-opacity-30 items-center gap-1 bg-slate-200 rounded-[3px]"
     >
       <SearchIcon size="15" class="text-slate-700" />
       {#if !hideSidebar}
         <input
+          on:keyup={({ target: { value } }) => debounce(value)}
           type="text"
           placeholder="Search here.."
           class=" bg-transparent px-2 w-full font-medium text-slate-600 text-[13px] outline-none"
-          name=""
-          id=""
         />
+      {/if}
+      {#if $chatsResult.isFetching && $chatsResult.data}
+        <CircleSpinner />
       {/if}
     </div>
     <div class="flex-1 flex flex-col border-t border-slate-200 h-full">
-      <div class="px-0 h-full">
-        {#each chats as chat, i}
-          <!-- svelte-ignore missing-declaration -->
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            on:click={() => {
-              goto(`/chats/${chat.id}`);
-            }}
-            class={`${
-              `/chats/${chat.id}` === $page.url.pathname
-                ? "bg-slate-200 bg-opacity-50 "
-                : ""
-            } flex hover:bg-slate-200 ${
-              hideSidebar ? "px-2" : "px-3"
-            } relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
-          >
-            {#if activeActionChat === i}
-              <Menu
-                items={chatActions}
-                close={() => {
-                  activeActionChat = undefined;
-                }}
-              />
-            {/if}
-            {#if `/chats/${chat.id}` === $page.url.pathname}
-              <div
-                class="w-[3px] absolute left-0 h-full rounded-r-lg bg-primary"
-              />
-            {/if}
-            <div class="flex items-center gap-2">
-              <div
-                class={`${
-                  hideSidebar ? "h-8 w-8" : "h-10 w-10"
-                } flex items-center rounded-[3px] justify-center ${
-                  chat.type === "pdf"
-                    ? "bg-red-100 border-red-200 border "
-                    : chat.type === "docx"
-                    ? "bg-blue-100 border-blue-200 border "
-                    : ""
-                }`}
-              >
-                <svelte:component
-                  this={chat.type === "pdf"
-                    ? Pdf
-                    : chat.type === "docx"
-                    ? Docx
-                    : FileIcon}
-                />
-              </div>
-              {#if !hideSidebar}
-                <div class="flex flex-col gap-[6px]">
-                  <h4
-                    class="text-[12.5px] truncate font-semibold text-slate-800 capitalize"
-                  >
-                    {chat.title}
-                  </h4>
-                  <p
-                    class="text-[11.8px] flex gap-2 items-center font-medium text-slate-500"
-                  >
-                    <span>
-                      {chat.pages} pages
-                    </span>
-                    <span class="font-bold">-</span>
-                    <span>
-                      {chat.createAt}
-                    </span>
-                  </p>
-                </div>
-              {/if}
-            </div>
-            {#if !hideSidebar}
-              <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <!-- svelte-ignore a11y-missing-attribute -->
-              <a
-                on:click={(e) => {
-                  e.stopPropagation();
-                  activeActionChat = i;
-                }}
-                class="h-7 cursor-pointer w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
-              >
-                <MoreVerticalIcon class="text-slate-700" size="14" />
-              </a>
-            {/if}
+      <div class="px-0 w-full h-full">
+        {#if $chatsResult.status === "loading"}
+          <div class="h-[200px] w-full flex items-center justify-center">
+            <CircleSpinner />
           </div>
+        {/if}
+        {#if $chatsResult.status === "success" && chats.length === 0}
+          <div
+            class="h-[300px] gap-3 flex flex-col w-full items-center justify-center"
+          >
+            <img
+              class="w-[120px]"
+              src="https://cdn.chatdoc.com/chatdoc/assets/404-3ec2fdec.svg"
+              alt=""
+            />
+            <p
+              class="text-center max-w-[230px] leading-7 text-slate-500 text-[13px] font-medium"
+            >
+              There are currently no documents, Please <a
+                on:click={() => {
+                  inputRef.click();
+                }}
+                class="text-primary text-opacity-80 font-semibold"
+                href="">Click here to upload.</a
+              >
+            </p>
+          </div>
+        {/if}
+
+        {#each chats as chat, i}
+          <ChatItem {chat} {hideSidebar} />
         {/each}
       </div>
+
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        class="bg-slate-100 relative cursor-pointer flex {!hideSidebar
+        class="{!user
+          ? 'pointer-events-none opacity-50'
+          : ''} bg-slate-100 relative cursor-pointer flex {!hideSidebar
           ? 'm-3 py-5'
           : 'm-2 py-2'} text-center border border-slate-300 border-dashed rounded-[3px] flex-col justify-center items-center gap-3"
       >
-        <!-- <LoadingOverlay /> -->
-        <input bind:this={inputRef} type="file" class="hidden" name="" id="" />
+        {#if uploadingFile}
+          <LoadingOverlay />
+        {/if}
+        <input
+          bind:this={inputRef}
+          on:change={handleChange}
+          type="file"
+          class="hidden"
+          name=""
+          id=""
+        />
         <UploadCloudIcon
           class="text-slate-600"
           size={!hideSidebar ? "20" : "16"}
@@ -379,19 +392,33 @@
         <div
           on:click={(e) => {
             if (!hideSidebar) {
-              showProfileDropdown = true;
+              if (user) {
+                showProfileDropdown = true;
+              }
             }
           }}
-          class="flex justify-center items-center gap-3"
+          class="flex flex-1 justify-center items-center gap-3"
         >
           <div>
-            <Avatar size={!hideSidebar ? "xs" : "sm"} name="Ntwali Edson" />
+            {#if user}
+              <Avatar
+                src={user?.photo}
+                size={!hideSidebar ? "xs" : "sm"}
+                name={user?.username}
+              />
+            {:else}
+              <Skeleton customClass="h-7 w-7" />
+            {/if}
           </div>
           {#if !hideSidebar}
-            <div>
-              <p class="font-medium text-[13.5px] capitalize text-slate-700">
-                Ntwali edson
-              </p>
+            <div class="w-full">
+              {#if user}
+                <p class="font-medium text-[13.5px] capitalize text-slate-700">
+                  {user?.username}
+                </p>
+              {:else}
+                <Skeleton customClass="h-4 w-[70%]" />
+              {/if}
             </div>
           {/if}
         </div>
@@ -400,7 +427,9 @@
           <!-- svelte-ignore a11y-missing-attribute -->
           <a
             on:click={(e) => {
-              showProfileDropdown = !showProfileDropdown;
+              if (user) {
+                showProfileDropdown = !showProfileDropdown;
+              }
             }}
             class="h-8 w-8 cursor-pointer flex items-center justify-center rounded-[3px] hover:bg-slate-200"
           >

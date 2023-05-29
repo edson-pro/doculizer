@@ -16,9 +16,9 @@
   on:keydown
   on:click={click}
   class="
-      absolute select-none h-full w-full flex justify-center items-center bg-slate-200 {dark
-    ? 'dark:bg-black dark:bg-opacity-50'
-    : 'dark:bg-slate-900 dark:bg-opacity-75'}  bg-opacity-75 inset-0 transition-opacity
+      absolute select-none h-full w-full flex justify-center items-center {dark
+    ? 'bg-black bg-opacity-30'
+    : 'dark:bg-slate-900 dark:bg-opacity-75- bg-slate-200 '} inset-0 transition-opacity
       {blur ? `backdrop-blur-sm ` : ''}
       {customClass}
     "

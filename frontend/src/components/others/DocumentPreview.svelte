@@ -16,8 +16,20 @@
   import { onMount } from "svelte";
   import Menu from "./Menu.svelte";
   import * as modals from "@/stores/modals";
+  import { page } from "$app/stores";
 
   import { uiState, setUiState } from "@/stores/layout";
+  import { useQuery, useQueryClient } from "@sveltestack/svelte-query";
+  import client from "@/lib/client";
+  import { auth } from "@/stores/auth";
+  import PdfViewer from "./PdfViewer.svelte";
+  import DocxPreview from "./DocxPreview.svelte";
+  import Skeleton from "../ui/Skeleton.svelte";
+  import CircleSpinner from "../ui/CircleSpinner.svelte";
+  import Markdown from "../vectors/documents/Markdown.svelte";
+  import { chatsQueryKey } from "@/stores/queryKeys";
+  import { addToast } from "@/stores/toast";
+  import { goto } from "$app/navigation";
 
   const handleCallapse = () => {
     setUiState({ ...$uiState, hideSidebar: false });
@@ -28,6 +40,8 @@
   export let currentDoc;
 
   let currentIntersection = 1;
+
+  export let loading;
 
   let scrollPercentage;
 
@@ -70,6 +84,8 @@
 
   const pages = [1, 2, 3, 4];
 
+  const queryClient = useQueryClient();
+
   let showMenu = false;
 
   const actions = [
@@ -94,7 +110,25 @@
       click: () => {
         modals.open("confirm", {
           confirm: () => {
-            console.log("Delete Document");
+            modals.update("confirm", { loading: true });
+            return client
+              .collection("chats")
+              .doc(currentDoc.id)
+              .delete()
+              .then((e) => {
+                queryClient.invalidateQueries($chatsQueryKey);
+                goto("/chats");
+                setTimeout(() => {
+                  modals.update("confirm", { loading: false });
+                  modals.close();
+                  addToast({
+                    message: "Chat document was deleted successfully",
+                    type: "success",
+                    title: "Deleted succesfully",
+                  });
+                  console.log("Delete Document");
+                }, 500);
+              });
           },
           title: "Delete this Document",
           desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
@@ -134,30 +168,56 @@
           >
         </a>
       {/if}
-      <svelte:component
-        this={currentDoc.type === "pdf"
-          ? Pdf
-          : currentDoc.type === "docx"
-          ? Docx
-          : FileIcon}
-      />
-      <div class="flex items-center gap-2">
-        <h4 class="font-semibold capitalize text-[13px]">
-          {currentDoc.title}
-        </h4>
-        <span
-          class="text-[10px] font-semibold text-blue-400 bg-blue-100 py-[2px] rounded-full px-2"
-        >
-          .DOCX
-        </span>
-      </div>
+
+      {#if loading}
+        <div>
+          <Skeleton customClass="h-7 w-7" />
+        </div>
+      {:else}
+        <svelte:component
+          this={currentDoc?.type === "pdf"
+            ? Pdf
+            : currentDoc?.type === "docx" || currentDoc?.type === "google-docs"
+            ? Docx
+            : currentDoc?.type === "markdown"
+            ? Markdown
+            : FileIcon}
+        />
+      {/if}
+      {#if loading}
+        <Skeleton customClass="h-4 w-[120px]" />
+      {:else}
+        <div class="flex items-center gap-2">
+          <h4 class="font-semibold capitalize text-[13px]">
+            {currentDoc?.title}
+          </h4>
+          {#if currentDoc}
+            <span
+              class="text-[10px] uppercase font-semibold py-[2px] rounded-full px-2 {currentDoc.type ===
+              'pdf'
+                ? 'bg-red-100 text-red-500 '
+                : currentDoc?.type === 'docx' ||
+                  currentDoc?.type === 'google-docs'
+                ? 'bg-blue-100 text-blue-500 '
+                : currentDoc.type === 'markdown'
+                ? 'bg-[#179fe5] bg-opacity-20 text-blue-500 '
+                : ''}"
+            >
+              .{currentDoc?.extension}
+            </span>
+          {/if}
+        </div>
+      {/if}
     </div>
+    <!-- {JSON.stringify($chatsResult)} -->
     <!-- svelte-ignore a11y-missing-attribute -->
     <div class="">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <a
         on:click={() => {
-          showMenu = true;
+          if (currentDoc) {
+            showMenu = true;
+          }
         }}
         class="h-7 w-7 cursor-pointer -mr-[6px] flex items-center justify-center rounded-[3px] hover:bg-slate-100"
       >
@@ -229,9 +289,25 @@
     class="scrollbar- scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 bg-slate-200"
   >
     <div class="w-full h-full mb-2 border-r border-slate-300 p-4">
-      <!-- <PdfViewer onLoaded={handleLoad} /> -->
-      <MarkdownViewier />
-      <!-- <DocxPreview /> -->
+      {#if loading}
+        <div
+          class="w-full flex items-center justify-center max-w-[630px] mx-auto h-[600px] my-3 first:mt-0 border overflow-hidden border-slate-300 bg-white rounded-[3px]"
+        >
+          <CircleSpinner />
+        </div>
+      {/if}
+
+      {#if currentDoc}
+        {#if currentDoc?.type === "pdf"}
+          <PdfViewer url={currentDoc.file} onLoaded={handleLoad} />
+        {:else if currentDoc?.type === "markdown"}
+          <MarkdownViewier url={currentDoc.file} />
+        {:else if currentDoc?.type === "docx" || currentDoc.type === "google docs"}
+          <DocxPreview url={currentDoc.file} />
+        {:else}
+          <p />
+        {/if}
+      {/if}
       <div class="h-[10px]" />
     </div>
   </div>

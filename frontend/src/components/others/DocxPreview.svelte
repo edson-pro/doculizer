@@ -1,19 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import mammoth from "mammoth/mammoth.browser";
+  import CircleSpinner from "../ui/CircleSpinner.svelte";
+  import { afterUpdate } from "svelte";
 
   let isLoading = true;
   let htmlContent: string | undefined = "";
+  export let url;
 
-  onMount(async () => {
+  // afterUpdate(() => {
+  //   console.log("propValue changed:", url);
+  // });
+
+  afterUpdate(async () => {
     try {
       // Simulating an API call or file fetching
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Replace this with your actual file fetching logic
-      const response = await fetch(
-        "https://exrlobuxamfvfkfjnmbi.supabase.co/storage/v1/object/public/documents/documents/Developer_contract_-_Unit_A_template.docx"
-      );
+      const response = await fetch(url);
 
       const buffer = await response.arrayBuffer();
 
@@ -26,7 +31,6 @@
           console.log(e);
           return "";
         });
-      console.log(res);
 
       htmlContent = res;
       isLoading = false;
@@ -48,8 +52,8 @@
       class="p-5 prose-headings:mb-3 prose-p:mb-3 prose-p:text-slate-600 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
     >
       {#if isLoading}
-        <div class="text-[13px] font-medium text-slate-600 h-[800px]">
-          Loading...
+        <div class="h-[620px] w-full flex justify-center items-center">
+          <CircleSpinner />
         </div>
       {:else}
         <div>

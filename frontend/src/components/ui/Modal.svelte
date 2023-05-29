@@ -55,14 +55,14 @@
         }}
         class=" {noBackground
           ? ''
-          : 'dark:bg-slate-900 bg-white shadow-xl'} relative inline-block rounded-[3px] transform transition-all my-8 align-middle w-full
+          : 'dark:bg-slate-900 bg-white shadow-sm'} relative inline-block rounded-[3px] transform transition-all my-8 align-middle w-full
                 {sizeClass}
               "
       >
         <slot name="header">
           {#if title}
             <div
-              class="{showDividers ? 'border-b px-4  py-3' : 'px-5  py-3'}
+              class="{showDividers ? 'border-b px-4  py-3' : 'px-4  py-3'}
                        rounded-t-md border-slate-100 dark:border-slate-800
                     "
             >

@@ -1,17 +1,18 @@
 <!-- PDFViewer.svelte -->
 <script lang="ts">
-  import { onMount } from "svelte";
   import PdfPage from "./PdfPage.svelte";
+  import { afterUpdate } from "svelte";
+  import CircleSpinner from "../ui/CircleSpinner.svelte";
 
   let pdfDocument;
   let totalPages = 0;
   export let onLoaded: any;
+  export let url;
 
-  onMount(async () => {
+  afterUpdate(async () => {
     const pdfjsLib = await import("pdfjs-dist/build/pdf");
     const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.entry");
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-    const url = "/doc.pdf";
     const loadingTask = pdfjsLib.getDocument(url);
     pdfDocument = await loadingTask.promise;
     totalPages = pdfDocument.numPages;
@@ -30,7 +31,9 @@
     {/each}
   {:else}
     <div
-      class="w-full h-[650px] my-3 first:mt-0 border overflow-hidden border-slate-300 bg-white rounded-[3px]"
-    />
+      class="w-full h-[650px] flex items-center justify-center my-3 first:mt-0 border overflow-hidden border-slate-300 bg-white rounded-[3px]"
+    >
+      <CircleSpinner />
+    </div>
   {/if}
 </div>

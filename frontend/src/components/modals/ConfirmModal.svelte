@@ -25,9 +25,9 @@
         variant="default">Cancel</Button
       >
       <Button
+        loading={payload.loading}
         click={(e) => {
           payload.confirm();
-          close();
         }}
         color="danger"
         size="sm">Yes, Confirm</Button

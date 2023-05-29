@@ -1,4 +1,5 @@
 <script>
+  import CircleSpinner from "./CircleSpinner.svelte";
   import Loader from "./Loader.svelte";
   import Overlay from "./Overlay.svelte";
 </script>
@@ -9,7 +10,7 @@
       <Overlay blur />
     </div>
     <div class="relative z-30">
-      <Loader />
+      <CircleSpinner />
     </div>
   </div>
 </div>

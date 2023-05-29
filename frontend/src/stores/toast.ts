@@ -10,7 +10,7 @@ export const addToast = (toast) => {
     id,
     type: "primary",
     dismissible: true,
-    timeout: 5000,
+    timeout: 4000,
   };
 
   toasts.update((all) => [...all, { ...defaults, ...toast }]);

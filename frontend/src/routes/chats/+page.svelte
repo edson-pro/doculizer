@@ -1,12 +1,17 @@
-<script>
+<script lang="ts">
+  import CircleSpinner from "@/components/ui/CircleSpinner.svelte";
   import Loader from "@/components/ui/Loader.svelte";
-  import {
-    FileIcon,
-    Link2Icon,
-    LinkIcon,
-    UploadCloudIcon,
-    UploadIcon,
-  } from "svelte-feather-icons";
+  import { addToast } from "@/stores/toast";
+  import { LinkIcon, UploadCloudIcon, UploadIcon } from "svelte-feather-icons";
+  import { PUBLIC_API_URL } from "$env/static/public";
+  import shortid from "shortid";
+  import supabase from "@/client/lib/supabase";
+  import { auth } from "@/stores/auth";
+  import client from "@/lib/client";
+  import { chatsQueryKey } from "@/stores/queryKeys";
+  import { useQueryClient } from "@sveltestack/svelte-query";
+  import { goto } from "$app/navigation";
+  import createChat from "@/utils/createChat";
 
   const providers = [
     {
@@ -19,18 +24,63 @@
 
   let loadingLink = false;
   let uploadingFile = false;
+
+  const queryClient = useQueryClient();
+
+  $: user = $auth.user;
+
+  const handleChange = async (e) => {
+    uploadingFile = true;
+    const file = e.target.files[0];
+
+    return createChat({ file, user })
+      .then((data) => {
+        uploadingFile = false;
+        addToast({
+          title: "Chat created success",
+          message: "You can start chatting with your file.",
+          type: "success",
+        });
+        queryClient.invalidateQueries($chatsQueryKey);
+        setTimeout(() => {
+          goto(`/chats/${data.id}`);
+        }, 1000);
+      })
+      .catch((e) => {
+        uploadingFile = false;
+        addToast({
+          title: e.message,
+          type: "danger",
+        });
+        console.log(e);
+      });
+  };
+
+  let fileInput;
 </script>
 
 <div class="w-full border-t border-slate-300 border-b h-screen">
-  <div class="bg-white p-3 max-w-xl my-32 mx-auto border border-slate-200">
+  <div
+    class="bg-white rounded-[3px] bg-opacity-50 p-3 max-w-xl my-32 mx-auto border border-slate-300"
+  >
     <div class=" p-3">
       <div class="flex items-center justify-center gap-3 flex-col">
         <div class="border border-slate-200 rounded-[3px] w-fit">
+          <input
+            on:change={handleChange}
+            bind:this={fileInput}
+            type="file"
+            class="hidden"
+          />
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
-            class="bg-slate-50 border-white border-4 flex justify-center items-center rounded-[3px] w-[150px] h-20"
+            on:click={(e) => {
+              fileInput.click();
+            }}
+            class="bg-slate-50 cursor-pointer border-white border-4 flex justify-center items-center rounded-[3px] w-[150px] h-20"
           >
             {#if uploadingFile}
-              <Loader />
+              <CircleSpinner />
             {:else}
               <UploadCloudIcon class="text-slate-500" />
             {/if}
@@ -57,7 +107,7 @@
       {#each providers as provider}
         <a
           href=""
-          class="h-12 cursor-default hover:bg-slate-100 w-12 flex justify-center items-center border border-slate-200 rounded-[3px]"
+          class="h-12 cursor-default pointer-events-none hover:bg-slate-100 w-12 flex justify-center items-center border border-slate-200 rounded-[3px]"
         >
           <img class="h-7 w-6 object-contain" src={provider.icon} alt="" />
         </a>
