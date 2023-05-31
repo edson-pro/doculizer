@@ -12,6 +12,7 @@
     SettingsIcon,
     Trash2Icon,
     UploadCloudIcon,
+    XIcon,
   } from "svelte-feather-icons";
   import Pdf from "../vectors/documents/Pdf.svelte";
   import Docx from "../vectors/documents/Docx.svelte";
@@ -103,9 +104,9 @@
                 .logout()
                 .then((e) => {
                   modals.close();
+                  goto("/");
                   modals.update("confirm", { loading: false });
                   logout();
-                  goto("/");
                 });
             }, 2000);
           },
@@ -117,17 +118,13 @@
   ];
 
   let inputRef;
-  const handleUpload = (e) => {};
-  let activeActionChat = undefined;
 
   $: user = $auth.user;
   $: authLoading = $auth.loading;
 
   const fetcher = ({ queryKey }) => {
     const filters = queryKey[1];
-    const q = client
-      .collection("chats")
-      .where("user_id", "==", "f00e76e2-df7f-437c-883a-d739af279cb3");
+    const q = client.collection("chats").where("user_id", "==", user.id);
 
     if (filters?.search) q.search("title", filters?.search);
 
@@ -211,10 +208,10 @@
         <img class="h-8 w-8 rounded-[3px]" src="/images/logo.png" alt="" />
       </a>
       {#if !hideSidebar}
-        <div class="flex items-center gap-2">
+        <a href="/chats" class="flex items-center gap-2">
           <GridIcon size="18" />
           <span class="font-semibold text-[13.5px]"> Documents </span>
-        </div>
+        </a>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-missing-attribute -->
         <a
@@ -252,6 +249,7 @@
       {#if !hideSidebar}
         <input
           on:keyup={({ target: { value } }) => debounce(value)}
+          value={searchText}
           type="text"
           placeholder="Search here.."
           class=" bg-transparent px-2 w-full font-medium text-slate-600 text-[13px] outline-none"
@@ -259,6 +257,18 @@
       {/if}
       {#if $chatsResult.isFetching && $chatsResult.data}
         <CircleSpinner />
+      {/if}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      {#if searchText && $chatsResult.status === "success"}
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a
+          on:click={(e) => {
+            searchText = "";
+          }}
+          class="cursor-pointer"
+        >
+          <XIcon size="14" class="text-slate-600" />
+        </a>
       {/if}
     </div>
     <div class="flex-1 flex flex-col border-t border-slate-200 h-full">
@@ -272,11 +282,7 @@
           <div
             class="h-[300px] gap-3 flex flex-col w-full items-center justify-center"
           >
-            <img
-              class="w-[120px]"
-              src="https://cdn.chatdoc.com/chatdoc/assets/404-3ec2fdec.svg"
-              alt=""
-            />
+            <img class="w-[120px]" src="/images/empty.svg" alt="" />
             <p
               class="text-center max-w-[230px] leading-7 text-slate-500 text-[13px] font-medium"
             >
@@ -298,6 +304,7 @@
 
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
+        on:click={() => inputRef.click()}
         class="{!user
           ? 'pointer-events-none opacity-50'
           : ''} bg-slate-100 relative cursor-pointer flex {!hideSidebar

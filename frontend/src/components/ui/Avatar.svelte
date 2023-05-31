@@ -53,13 +53,25 @@
 
   const avatarClass =
     "flex items-center justify-center overflow-hidden capitalize";
+
+  let imageError = false;
 </script>
 
 <div class="{avatarClass} {roundedClass} {sizeClass}">
-  {#if src}
-    <img {src} class="h-full bg-gray-800 object-cover w-full" />
+  {#if src && !imageError}
+    <img
+      alt={name}
+      {src}
+      on:error={(e) => {
+        imageError = true;
+      }}
+      on:load={() => {
+        imageError = false;
+      }}
+      class="h-full bg-gray-800 object-cover w-full"
+    />
   {/if}
-  {#if !src && name}
+  {#if (!src || imageError) && name}
     <div
       style:background={color}
       style:color={variant === "light" ? color.slice(0, 7) : "white"}

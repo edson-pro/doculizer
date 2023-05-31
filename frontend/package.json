@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@fontsource/fira-mono": "^4.5.10",
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@neoconfetti/svelte": "^1.0.0",
     "@supabase/supabase-js": "^2.23.0",
     "@sveltejs/adapter-auto": "^2.0.0",
@@ -21,7 +22,10 @@
     "@types/qs": "^6.9.7",
     "autoprefixer": "^10.4.14",
     "docxtemplater": "^3.37.9",
+    "eventsource-parser": "^1.0.0",
     "file-saver": "^2.0.5",
+    "googleapis": "^118.0.0",
+    "langchain": "^0.0.86",
     "mammoth": "^1.5.1",
     "pdfjs-dist": "^3.6.172",
     "postcss": "^8.4.23",

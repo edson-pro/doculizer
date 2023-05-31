@@ -91,18 +91,7 @@
 
 <!-- svelte-ignore missing-declaration -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  on:click={() => {
-    goto(`/chats/${chat.id}`);
-  }}
-  class={`${
-    `/chats/${chat.id}` === $page.url.pathname
-      ? "bg-slate-200 bg-opacity-50 "
-      : ""
-  } flex hover:bg-slate-200 ${
-    hideSidebar ? "px-2" : "px-3"
-  } relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
->
+<div class="relative">
   {#if showActions}
     <Menu
       items={chatActions}
@@ -111,65 +100,79 @@
       }}
     />
   {/if}
-  {#if `/chats/${chat.id}` === $page.url.pathname}
-    <div class="w-[3px] absolute left-0 h-full rounded-r-lg bg-primary" />
-  {/if}
-  <div class="flex items-center gap-3">
-    <div
-      class={`${
-        hideSidebar ? "h-8 w-8" : "h-10 w-10"
-      } flex items-center rounded-[3px] justify-center ${
-        chat.type === "pdf"
-          ? "bg-red-100 border-red-200 border "
-          : chat.type === "docx" || chat.type === "google-docs"
-          ? "bg-blue-100 border-blue-200 border "
-          : chat.type === "markdown"
-          ? "bg-[#179fe5] bg-opacity-20 border-blue-200 border "
-          : ""
-      }`}
-    >
-      <svelte:component
-        this={chat.type === "pdf"
-          ? Pdf
-          : chat.type === "docx" || chat.type === "google-docs"
-          ? Docx
-          : chat.type === "markdown"
-          ? Markdown
-          : FileIcon}
-      />
+  <!-- svelte-ignore a11y-missing-attribute -->
+  <a
+    on:click={() => {
+      goto(`/chats/${chat.id}`);
+    }}
+    class={`${
+      `/chats/${chat.id}` === $page.url.pathname
+        ? "bg-slate-200 bg-opacity-50 "
+        : ""
+    } flex hover:bg-slate-200 ${
+      hideSidebar ? "px-2" : "px-3"
+    } relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
+  >
+    {#if `/chats/${chat.id}` === $page.url.pathname}
+      <div class="w-[3px] absolute left-0 h-full rounded-r-lg bg-primary" />
+    {/if}
+    <div class="flex items-center gap-3">
+      <div
+        class={`${
+          hideSidebar ? "h-8 w-8" : "h-10 w-10"
+        } flex items-center rounded-[3px] justify-center ${
+          chat.type === "pdf"
+            ? "bg-red-100 border-red-200 border "
+            : chat.type === "docx" || chat.type === "google-docs"
+            ? "bg-blue-100 border-blue-200 border "
+            : chat.type === "markdown"
+            ? "bg-[#179fe5] bg-opacity-20 border-blue-200 border "
+            : ""
+        }`}
+      >
+        <svelte:component
+          this={chat.type === "pdf"
+            ? Pdf
+            : chat.type === "docx" || chat.type === "google-docs"
+            ? Docx
+            : chat.type === "markdown"
+            ? Markdown
+            : FileIcon}
+        />
+      </div>
+      {#if !hideSidebar}
+        <div class="flex flex-col gap-[6px]">
+          <h4
+            class="text-[12.5px] truncate font-semibold text-slate-800 capitalize"
+          >
+            {truncateString(chat.title)}
+          </h4>
+          <p
+            class="text-[11.8px] flex gap-2 items-center font-medium text-slate-500"
+          >
+            <span class="capitalize">
+              {chat.type}
+            </span>
+            <span class="font-bold">-</span>
+            <span>
+              {chat.created_at}
+            </span>
+          </p>
+        </div>
+      {/if}
     </div>
     {#if !hideSidebar}
-      <div class="flex flex-col gap-[6px]">
-        <h4
-          class="text-[12.5px] truncate font-semibold text-slate-800 capitalize"
-        >
-          {truncateString(chat.title)}
-        </h4>
-        <p
-          class="text-[11.8px] flex gap-2 items-center font-medium text-slate-500"
-        >
-          <span class="capitalize">
-            {chat.type}
-          </span>
-          <span class="font-bold">-</span>
-          <span>
-            {chat.created_at}
-          </span>
-        </p>
-      </div>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <a
+        on:click={(e) => {
+          e.stopPropagation();
+          showActions = true;
+        }}
+        class="h-7 cursor-pointer w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+      >
+        <MoreVerticalIcon class="text-slate-700" size="14" />
+      </a>
     {/if}
-  </div>
-  {#if !hideSidebar}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-missing-attribute -->
-    <a
-      on:click={(e) => {
-        e.stopPropagation();
-        showActions = true;
-      }}
-      class="h-7 cursor-pointer w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
-    >
-      <MoreVerticalIcon class="text-slate-700" size="14" />
-    </a>
-  {/if}
+  </a>
 </div>

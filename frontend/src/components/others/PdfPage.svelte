@@ -6,18 +6,6 @@
 
   async function renderPage() {
     const page = await pdfDocument.getPage(currentPage);
-    // var resolution = 1.2; // for example
-    // const viewport = page.getViewport({ scale: 1 });
-    // const canvas: any = document.getElementById(`pdfCanvas-${currentPage}`);
-    // const context = canvas.getContext("2d");
-    // canvas.height = resolution * viewport.height; //actual size
-    // canvas.width = resolution * viewport.width;
-
-    // const renderContext = {
-    //   canvasContext: context,
-    //   viewport: viewport,
-    //   transform: [resolution, 0, 0, resolution, 0, 0], // force it bigger size
-    // };
 
     var resolution = 1.02; // for example
     var container = document.getElementById("pdf-container"); //Container of the body

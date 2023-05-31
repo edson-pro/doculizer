@@ -1,24 +1,137 @@
-<script>
+<script lang="ts">
   import { MessageSquareIcon } from "svelte-feather-icons";
   import ChatList from "./chatList.svelte";
   import * as modals from "@/stores/modals";
+  import CircleSpinner from "../ui/CircleSpinner.svelte";
+  import client from "@/lib/client";
+  import { useQueryClient } from "@sveltestack/svelte-query";
+  import { addToast } from "@/stores/toast";
+
+  export let loadingMessages;
+  export let messages = [];
+  export let user;
+  export let chat;
+  export let messagesQk;
+
+  let history = [];
+
+  let streaming = false;
+
+  let loading = false;
+
+  const queryClient = useQueryClient();
+
+  const setMessages = (newMsgs) => {
+    queryClient.setQueryData(messagesQk, newMsgs);
+  };
 
   const handleClear = () => {
     modals.open("confirm", {
       confirm: () => {
-        console.log("Delete Chat history");
+        modals.update("confirm", { loading: true });
+        return client
+          .collection("messages")
+          .where("chat_id", "==", chat.id)
+          .delete()
+          .then((e) => {
+            queryClient.invalidateQueries(messagesQk);
+            setTimeout(() => {
+              modals.update("confirm", { loading: false });
+              modals.close();
+              addToast({
+                message: "Chat convesation was deleted successfully",
+                type: "success",
+                title: "Deleted succesfully",
+              });
+              console.log("Delete Document");
+            }, 500);
+          });
       },
       title: "Delete all chat history",
       desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
     });
   };
 
-  const suggestions = [
-    "What are the intellectual property rights assigned to Unit U+2467 GmbH.",
-    "How does the Employer handle the release of an Employee from work after termination.",
-    "What is the monthly gross remuneration for a Software Developer at Unit U+2467 GmbH.",
-    "What are the confidentiality agreements that an Employee must adhere to with respect to Ape Unit, KB21.",
-  ];
+  let message = "";
+
+  let streamingMessage = "";
+
+  const storeMessages = async (messages) => {
+    for (let index = 0; index < messages.length; index++) {
+      const msg = messages[index];
+      await client.collection("messages").create({
+        role: msg.role,
+        content: msg.content,
+        user_id: user.id,
+        chat_id: chat.id,
+      });
+    }
+  };
+
+  const handleSubmit = async ({ message: incomingMessage }) => {
+    console.log(incomingMessage);
+    if (incomingMessage) {
+      setMessages([...messages, { content: incomingMessage, role: "user" }]);
+      const question = incomingMessage.trim();
+      streamingMessage = "";
+      loading = true;
+      message = "";
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question,
+          history,
+        }),
+      });
+
+      const stream: any = res.body;
+      const reader = stream.getReader();
+
+      loading = false;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done || value === "[DONE]") {
+            console.log("done");
+            const sytemAnswer = {
+              role: "system",
+              content: streamingMessage,
+            };
+            const userQuestion = {
+              role: "user",
+              content: question,
+            };
+            streamingMessage = "";
+
+            setMessages([...messages, sytemAnswer]);
+            await storeMessages([userQuestion, sytemAnswer]);
+
+            break;
+          }
+          const decodedValue: any = new TextDecoder().decode(value);
+          if (decodedValue === "[DONE]") {
+            continue;
+          }
+          streamingMessage = streamingMessage + decodedValue;
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        reader.releaseLock();
+        console.log("finaly");
+      }
+    }
+  };
+
+  $: chatMessages = streamingMessage
+    ? [...messages, { role: "system", content: streamingMessage }]
+    : messages;
+
+  $: console.log("streaming ---", streamingMessage);
 </script>
 
 <div class="w-[45%] bg-white flex h-full flex-col">
@@ -56,106 +169,81 @@
       >
     </a>
   </div>
-  <!-- <div class="flex-1 h-full bg-blue-200-">
-        <div class="px-3 h-full my-3">
-          <div class="flex h-full justify-center flex-col">
-            <div
-              class="flex mb-2 -mt-12 flex-col gap-3 justify-center items-center"
-            >
-              <svg
-                height="36"
-                width="36"
-                class="fill-primary stroke-primary"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-                ><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-                  id="SVGRepo_tracerCarrier"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /><g id="SVGRepo_iconCarrier">
-                  <title />
-                  <g id="idea">
-                    <path
-                      d="M16.52,3.66A7,7,0,0,0,5,9.17a9.49,9.49,0,0,0,3,6.24c.51.58,1,1.18,1,1.49v2.38A2.72,2.72,0,0,0,11.72,22h.56A2.72,2.72,0,0,0,15,19.28V16.9c0-.31.53-.91,1-1.49A9.43,9.43,0,0,0,19,9,7,7,0,0,0,16.52,3.66ZM12.28,21h-.56A1.72,1.72,0,0,1,10,19.28V18h4v1.28A1.72,1.72,0,0,1,12.28,21Zm3-6.25c-.73.81-1.3,1.46-1.3,2.15V17H10v-.1c0-.69-.57-1.34-1.3-2.15A8.63,8.63,0,0,1,6,9.15a6,6,0,0,1,5-6.06A6,6,0,0,1,18,9C18,11.7,16.44,13.46,15.3,14.75Z"
-                    /> <path d="M21.5,8h-1a.5.5,0,0,0,0,1h1a.5.5,0,0,0,0-1Z" />
-                    <path
-                      d="M4,8.5A.5.5,0,0,0,3.5,8h-1a.5.5,0,0,0,0,1h1A.5.5,0,0,0,4,8.5Z"
-                    />
-                    <path
-                      d="M3.85,2.15a.49.49,0,0,0-.7.7l1,1a.48.48,0,0,0,.7,0,.48.48,0,0,0,0-.7Z"
-                    />
-                    <path
-                      d="M19.5,4a.47.47,0,0,0,.35-.15l1-1a.49.49,0,0,0-.7-.7l-1,1a.48.48,0,0,0,0,.7A.47.47,0,0,0,19.5,4Z"
-                    />
-                    <path
-                      d="M19.85,13.15a.49.49,0,0,0-.7.7l1,1a.48.48,0,0,0,.7,0,.48.48,0,0,0,0-.7Z"
-                    />
-                    <path
-                      d="M4.15,13.15l-1,1a.48.48,0,0,0,0,.7.48.48,0,0,0,.7,0l1-1a.49.49,0,0,0-.7-.7Z"
-                    />
-                    <path
-                      d="M13.15,7.15l-3,3a.47.47,0,0,0-.11.54.5.5,0,0,0,.46.31h1.79l-1.14,1.15a.48.48,0,0,0,0,.7.48.48,0,0,0,.7,0l2-2a.47.47,0,0,0,.11-.54A.5.5,0,0,0,13.5,10H11.71l2.14-2.15a.49.49,0,0,0-.7-.7Z"
-                    />
-                  </g>
-                </g></svg
-              >
-              <h4
-                class="text-center font-medium text-[13px] text-slate-500 leading-7 mx-auto max-w-xs"
-              >
-                Ask me anything about the document, or just click one of the
-                options below:
-              </h4>
-            </div>
-            <div class="flex my-3 max-w-lg mx-auto mx-4 flex-col gap-3">
-              {#each suggestions as suggestion}
-                <a
-                  href="#"
-                  class="bg-blue-50 cursor-pointer border-l-[3px] border-l-primary bg-opacity-30 border border-slate-200 text-slate-600 font-medium text-[12.5px] px-3 py-[6px] rounded-[3px] leading-7"
-                >
-                  <div />
-                  <p>{suggestion}</p>
-                </a>
-              {/each}
-            </div>
-          </div>
-        </div>
-      </div> -->
-  <ChatList />
+
+  <ChatList
+    onSuggest={(message) => {
+      handleSubmit({ message });
+    }}
+    loading={loadingMessages}
+    messages={chatMessages}
+  />
+
   <div
     class="px-3 border-t border-slate-300 bg-slate-100 bg-opacity-60 pt-[10px] pb-1"
   >
     <form
+      on:submit|preventDefault={() => handleSubmit({ message })}
       class="flex px-[10px] py-3 bg-white border-opacity-50 border-primary items-center border border-slate-300- rounded-[3px]"
     >
       <input
+        bind:value={message}
         type="text"
+        disabled={loading || Boolean(streamingMessage)}
         placeholder="Ask me anyhting about this document.."
         class="w-full px-1 text-slate-700 placeholder:text-slate-500 text-[13px] font-medium outline-none bg-transparent"
-        name=""
-        id=""
       />
-      <a href="#" type="submit">
-        <svg
-          height="21"
-          width="21"
-          class="stroke-primary"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          ><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-            id="SVGRepo_tracerCarrier"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          /><g id="SVGRepo_iconCarrier">
-            <path
-              d="M10.5004 11.9998H5.00043M4.91577 12.2913L2.58085 19.266C2.39742 19.8139 2.3057 20.0879 2.37152 20.2566C2.42868 20.4031 2.55144 20.5142 2.70292 20.5565C2.87736 20.6052 3.14083 20.4866 3.66776 20.2495L20.3792 12.7293C20.8936 12.4979 21.1507 12.3822 21.2302 12.2214C21.2993 12.0817 21.2993 11.9179 21.2302 11.7782C21.1507 11.6174 20.8936 11.5017 20.3792 11.2703L3.66193 3.74751C3.13659 3.51111 2.87392 3.39291 2.69966 3.4414C2.54832 3.48351 2.42556 3.59429 2.36821 3.74054C2.30216 3.90893 2.3929 4.18231 2.57437 4.72906L4.91642 11.7853C4.94759 11.8792 4.96317 11.9262 4.96933 11.9742C4.97479 12.0168 4.97473 12.0599 4.96916 12.1025C4.96289 12.1506 4.94718 12.1975 4.91577 12.2913Z"
-              stroke-width="2"
+      {#if loading}
+        <CircleSpinner />
+      {:else if streaming}
+        <a href="">
+          <svg
+            height="21"
+            width="21"
+            class="stroke-red-500"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            ><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+              id="SVGRepo_tracerCarrier"
               stroke-linecap="round"
               stroke-linejoin="round"
-            />
-          </g></svg
-        >
-      </a>
+            /><g id="SVGRepo_iconCarrier">
+              <g id="Media / Stop">
+                <path
+                  id="Vector"
+                  d="M5 8.2002V15.8002C5 16.9203 5 17.4796 5.21799 17.9074C5.40973 18.2837 5.71547 18.5905 6.0918 18.7822C6.5192 19 7.07899 19 8.19691 19H15.8036C16.9215 19 17.4805 19 17.9079 18.7822C18.2842 18.5905 18.5905 18.2837 18.7822 17.9074C19 17.48 19 16.921 19 15.8031V8.19691C19 7.07899 19 6.5192 18.7822 6.0918C18.5905 5.71547 18.2842 5.40973 17.9079 5.21799C17.4801 5 16.9203 5 15.8002 5H8.2002C7.08009 5 6.51962 5 6.0918 5.21799C5.71547 5.40973 5.40973 5.71547 5.21799 6.0918C5 6.51962 5 7.08009 5 8.2002Z"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </g>
+            </g></svg
+          >
+        </a>
+      {:else}
+        <a href="#" type="submit">
+          <svg
+            height="21"
+            width="21"
+            class="stroke-primary"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            ><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            /><g id="SVGRepo_iconCarrier">
+              <path
+                d="M10.5004 11.9998H5.00043M4.91577 12.2913L2.58085 19.266C2.39742 19.8139 2.3057 20.0879 2.37152 20.2566C2.42868 20.4031 2.55144 20.5142 2.70292 20.5565C2.87736 20.6052 3.14083 20.4866 3.66776 20.2495L20.3792 12.7293C20.8936 12.4979 21.1507 12.3822 21.2302 12.2214C21.2993 12.0817 21.2993 11.9179 21.2302 11.7782C21.1507 11.6174 20.8936 11.5017 20.3792 11.2703L3.66193 3.74751C3.13659 3.51111 2.87392 3.39291 2.69966 3.4414C2.54832 3.48351 2.42556 3.59429 2.36821 3.74054C2.30216 3.90893 2.3929 4.18231 2.57437 4.72906L4.91642 11.7853C4.94759 11.8792 4.96317 11.9262 4.96933 11.9742C4.97479 12.0168 4.97473 12.0599 4.96916 12.1025C4.96289 12.1506 4.94718 12.1975 4.91577 12.2913Z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </g></svg
+          >
+        </a>
+      {/if}
     </form>
     <p class="text-[12.5px] text-center text-slate-500 py-2 font-medium">
       Free Research Preview. Doculizer may produce inaccurate response.

@@ -30,6 +30,7 @@
   import { chatsQueryKey } from "@/stores/queryKeys";
   import { addToast } from "@/stores/toast";
   import { goto } from "$app/navigation";
+  import Empty from "../ui/Empty.svelte";
 
   const handleCallapse = () => {
     setUiState({ ...$uiState, hideSidebar: false });
@@ -38,11 +39,13 @@
   $: hideSidebar = $uiState.hideSidebar;
 
   export let currentDoc;
+  export let messagesQk;
 
   let currentIntersection = 1;
 
   export let loading;
 
+  export let error;
   let scrollPercentage;
 
   let documentScroll;
@@ -95,7 +98,24 @@
       click: () => {
         modals.open("confirm", {
           confirm: () => {
-            console.log("Delete Chat history");
+            modals.update("confirm", { loading: true });
+            return client
+              .collection("messages")
+              .where("chat_id", "==", currentDoc.id)
+              .delete()
+              .then((e) => {
+                queryClient.invalidateQueries(messagesQk);
+                setTimeout(() => {
+                  modals.update("confirm", { loading: false });
+                  modals.close();
+                  addToast({
+                    message: "Chat convesation was deleted successfully",
+                    type: "success",
+                    title: "Deleted succesfully",
+                  });
+                  console.log("Delete Document");
+                }, 500);
+              });
           },
           title: "Delete all chat history",
           desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
@@ -189,7 +209,7 @@
       {:else}
         <div class="flex items-center gap-2">
           <h4 class="font-semibold capitalize text-[13px]">
-            {currentDoc?.title}
+            {error ? error : currentDoc?.title}
           </h4>
           {#if currentDoc}
             <span
@@ -203,19 +223,71 @@
                 ? 'bg-[#179fe5] bg-opacity-20 text-blue-500 '
                 : ''}"
             >
-              .{currentDoc?.extension}
+              {error ? "" : `.${currentDoc?.extension}`}
             </span>
           {/if}
         </div>
       {/if}
     </div>
+    <!-- <a
+      on:click={() => {
+        [
+          {
+            role: "user",
+            created_at: new Date(),
+            content:
+              "What are the intellectual property rights assigned to Unit U+2467 GmbH or its customers in relation to the work results of an Employee working on projects for Ape Unit and its related entities?",
+          },
+          {
+            role: "system",
+            created_at: new Date(),
+            content:
+              "The intellectual property rights connected to the work results of an Employee when working on projects of Ape Unit and its related companies or customers are assigned to Unit U+2467 GmbH or to its customers - depending on the regulations in the contracts between Unit U+2467 GmbH and its customers.",
+          },
+          {
+            role: "user",
+            created_at: new Date(),
+            content: "what is the length of the contract",
+          },
+          {
+            role: "system",
+            created_at: new Date(),
+            content:
+              "The length of the contract is one year, from March 1st, 2023, to February 29th, 2024, with a probationary period of six months.",
+          },
+          {
+            role: "user",
+            created_at: new Date(),
+            content:
+              "What are the intellectual property rights assigned to Unit U+2467 GmbH or its customers in relation to the work results of an Employee working on projects for Ape Unit and its related entities?",
+          },
+          {
+            role: "system",
+            created_at: new Date(),
+            content:
+              "The intellectual property rights connected to the work results of an Employee when working on projects of Ape Unit and its related companies or customers are assigned to Unit U+2467 GmbH or to its customers - depending on the regulations in the contracts between Unit U+2467 GmbH and its customers.",
+          },
+        ].forEach((e) => {
+          return client
+            .collection("messages")
+            .create({
+              ...e,
+              chat_id: 34,
+              user_id: "f00e76e2-df7f-437c-883a-d739af279cb3",
+            })
+            .then((e) => {
+              console.log("done");
+            });
+        });
+      }}>dd</a
+    > -->
     <!-- {JSON.stringify($chatsResult)} -->
     <!-- svelte-ignore a11y-missing-attribute -->
     <div class="">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <a
         on:click={() => {
-          if (currentDoc) {
+          if (currentDoc && !error) {
             showMenu = true;
           }
         }}
@@ -286,14 +358,22 @@
   <div
     on:scroll={parseScroll}
     bind:this={documentScroll}
-    class="scrollbar- scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 bg-slate-200"
+    class="scrollbar scrollbar-thin- scrollbar-w-1 scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 bg-slate-200"
   >
     <div class="w-full h-full mb-2 border-r border-slate-300 p-4">
-      {#if loading}
+      {#if loading || error}
         <div
-          class="w-full flex items-center justify-center max-w-[630px] mx-auto h-[600px] my-3 first:mt-0 border overflow-hidden border-slate-300 bg-white rounded-[3px]"
+          class="w-full flex items-center justify-center max-w-[630px] mx-auto h-[650px] my-3 first:mt-0 border overflow-hidden border-slate-300 bg-white rounded-[3px]"
         >
-          <CircleSpinner />
+          {#if error}
+            <Empty
+              image="/images/empty.svg"
+              title={"Something went wrong"}
+              desc={error}
+            />
+          {:else}
+            <CircleSpinner />
+          {/if}
         </div>
       {/if}
 

@@ -159,11 +159,13 @@ class SuperbaseAdapter {
 
     this.orders.forEach((e) => {
       const values = {
-        asc: "ascending",
-        desc: "descending",
+        asc: true,
+        desc: false,
       };
-      q.order(e.col, { [values[e.by]]: true });
+      if (e.column) q.order(e.column, { ascending: values[e.by] });
     });
+
+    console.log(q);
 
     if (this.searchQ?.text)
       q.textSearch(this.searchQ.column, this.searchQ.text, {
@@ -178,24 +180,23 @@ class SuperbaseAdapter {
 
     if (this.limitCount) q.limit(this.limitCount);
 
-    return (
-      q
-        .order("created_at", { ascending: false })
-        // .throwOnError()
-        .then(async ({ error, data, count }) => {
-          if (error) {
-            this.clear();
-            throw new Error(error.message);
-          }
-          const res = this.page
-            ? { total: count, data: data, page: this.page }
-            : returnCount
-            ? count
-            : data;
-          this.clear();
-          return res;
-        })
-    );
+    if (!this.orders.length) q.order("created_at", { ascending: false });
+
+    this.clear();
+
+    return q.then(async ({ error, data, count }) => {
+      if (error) {
+        this.clear();
+        throw new Error(error.message);
+      }
+      const res = this.page
+        ? { total: count, data: data, page: this.page }
+        : returnCount
+        ? count
+        : data;
+      this.clear();
+      return res;
+    });
   }
 }
 

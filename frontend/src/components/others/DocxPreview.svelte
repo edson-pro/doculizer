@@ -1,44 +1,41 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import mammoth from "mammoth/mammoth.browser";
   import CircleSpinner from "../ui/CircleSpinner.svelte";
-  import { afterUpdate } from "svelte";
+  import { useQuery } from "@sveltestack/svelte-query";
+  import { page } from "$app/stores";
+  import { auth } from "@/stores/auth";
 
-  let isLoading = true;
-  let htmlContent: string | undefined = "";
   export let url;
 
-  // afterUpdate(() => {
-  //   console.log("propValue changed:", url);
-  // });
+  $: user = $auth.user;
+  $: authLoading = $auth.loading;
 
-  afterUpdate(async () => {
-    try {
-      // Simulating an API call or file fetching
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+  const fetcher = async () => {
+    const response = await fetch(url);
+    const buffer = await response.arrayBuffer();
+    const res = await mammoth
+      .convertToHtml({ arrayBuffer: buffer })
+      .then(function (resultObject) {
+        return resultObject.value;
+      })
+      .catch((e) => {
+        console.log(e);
+        return "";
+      });
 
-      // Replace this with your actual file fetching logic
-      const response = await fetch(url);
+    return res;
+  };
 
-      const buffer = await response.arrayBuffer();
-
-      const res = await mammoth
-        .convertToHtml({ arrayBuffer: buffer })
-        .then(function (resultObject) {
-          return resultObject.value;
-        })
-        .catch((e) => {
-          console.log(e);
-          return "";
-        });
-
-      htmlContent = res;
-      isLoading = false;
-    } catch (error) {
-      console.error(error);
-      // Handle any error that occurred during file fetching or conversion
-    }
+  $: docResult = useQuery({
+    queryKey: ["chats", $page.params.id, "file"],
+    queryFn: fetcher,
+    enabled: user && !authLoading,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
+
+  $: htmlContent = $docResult.data;
+  $: isLoading = $docResult.status === "loading";
 </script>
 
 <div>

@@ -22,10 +22,32 @@
     }));
   };
 
+  const messagesFether = ({ queryKey }) => {
+    const id = queryKey[1];
+    const q = client
+      .collection("messages")
+      .where("chat_id", "==", id)
+      .orderBy("created_at", "desc");
+    return q.get().then((e: any) => e.reverse());
+  };
+
   $: chatsResult = useQuery({
     queryKey: ["chats", $page.params.id],
     queryFn: fetcher,
     enabled: user && !authLoading,
+    refetchOnWindowFocus: false,
+    retry: false,
+    keepPreviousData: true,
+  });
+
+  $: messagesQk = ["chats", currentDoc.id, "messages"];
+
+  $: messagesResults = useQuery({
+    queryKey: messagesQk,
+    queryFn: messagesFether,
+    enabled: user && !authLoading && Boolean(currentDoc?.id),
+    refetchOnWindowFocus: false,
+    retry: false,
     keepPreviousData: true,
   });
 
@@ -54,17 +76,31 @@
       }
     ),
   };
+
+  let messages = [];
 </script>
 
 <svelte:head>
   <title>
-    {currentDoc.title}
+    {currentDoc?.title || "Doculize"}
   </title>
 </svelte:head>
 
 <div
   class="w-full flex border-t border-slate-300 border-b items-center h-screen"
 >
-  <DocumentPreview loading={$chatsResult.isLoading} {currentDoc} />
-  <Chat />
+  <DocumentPreview
+    {messagesQk}
+    error={$chatsResult.error}
+    loading={$chatsResult.isLoading}
+    {currentDoc}
+  />
+
+  <Chat
+    {messagesQk}
+    chat={currentDoc}
+    {user}
+    messages={$messagesResults.data || []}
+    loadingMessages={$messagesResults?.isLoading}
+  />
 </div>

@@ -1,46 +1,30 @@
 <script lang="ts">
   import SvelteMarkdown from "svelte-markdown";
   import Avatar from "../ui/Avatar.svelte";
-  import MarkdownViewier from "./MarkdownViewier.svelte";
   import CodePreview from "./CodePreview.svelte";
+  import CircleSpinner from "../ui/CircleSpinner.svelte";
 
-  const chats = [
-    {
-      role: "user",
-      content:
-        "What are the intellectual property rights assigned to Unit U+2467 GmbH or its customers in relation to the work results of an Employee working on projects for Ape Unit and its related entities?",
-    },
-    {
-      role: "system",
-      content:
-        "The intellectual property rights connected to the work results of an Employee when working on projects of Ape Unit and its related companies or customers are assigned to Unit U+2467 GmbH or to its customers - depending on the regulations in the contracts between Unit U+2467 GmbH and its customers.",
-    },
-    {
-      role: "user",
-      content: "what is the length of the contract",
-    },
-    {
-      role: "system",
-      content:
-        "The length of the contract is one year, from March 1st, 2023, to February 29th, 2024, with a probationary period of six months.",
-    },
-    {
-      role: "user",
-      content:
-        "What are the intellectual property rights assigned to Unit U+2467 GmbH or its customers in relation to the work results of an Employee working on projects for Ape Unit and its related entities?",
-    },
-    {
-      role: "system",
-      content:
-        "The intellectual property rights connected to the work results of an Employee when working on projects of Ape Unit and its related companies or customers are assigned to Unit U+2467 GmbH or to its customers - depending on the regulations in the contracts between Unit U+2467 GmbH and its customers.",
-    },
+  export let messages;
+  export let loading;
+  export let onSuggest;
+
+  const suggestions = [
+    "What are the intellectual property rights assigned to Unit U+2467 GmbH.",
+    "How does the Employer handle the release of an Employee from work after termination.",
+    "What is the monthly gross remuneration for a Software Developer at Unit U+2467 GmbH.",
+    "What are the confidentiality agreements that an Employee must adhere to with respect to Ape Unit, KB21.",
   ];
 </script>
 
 <div
-  class="scrollbar- scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 p-4- h-full"
+  class="scrollbar scrollbar-thin- scrollbar-w-1 scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thin- scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 p-4- h-full"
 >
-  {#each chats as chat}
+  {#if loading}
+    <div class="h-full w-full flex items-center justify-center">
+      <CircleSpinner />
+    </div>
+  {/if}
+  {#each messages as chat}
     <div
       class={`flex p-4 gap-4 items-start ${
         chat.role === "user" ? "bg-slate-100" : ""
@@ -110,4 +94,74 @@
       </div>
     </div>
   {/each}
+  {#if !messages.length && !loading}
+    <div class="flex-1 h-full bg-blue-200-">
+      <div class="px-3 h-full my-3">
+        <div class="flex px-4 h-full justify-center flex-col">
+          <div
+            class="flex mb-2 -mt-12 flex-col gap-3 justify-center items-center"
+          >
+            <svg
+              height="36"
+              width="36"
+              class="fill-primary stroke-primary"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              ><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+                id="SVGRepo_tracerCarrier"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /><g id="SVGRepo_iconCarrier">
+                <title />
+                <g id="idea">
+                  <path
+                    d="M16.52,3.66A7,7,0,0,0,5,9.17a9.49,9.49,0,0,0,3,6.24c.51.58,1,1.18,1,1.49v2.38A2.72,2.72,0,0,0,11.72,22h.56A2.72,2.72,0,0,0,15,19.28V16.9c0-.31.53-.91,1-1.49A9.43,9.43,0,0,0,19,9,7,7,0,0,0,16.52,3.66ZM12.28,21h-.56A1.72,1.72,0,0,1,10,19.28V18h4v1.28A1.72,1.72,0,0,1,12.28,21Zm3-6.25c-.73.81-1.3,1.46-1.3,2.15V17H10v-.1c0-.69-.57-1.34-1.3-2.15A8.63,8.63,0,0,1,6,9.15a6,6,0,0,1,5-6.06A6,6,0,0,1,18,9C18,11.7,16.44,13.46,15.3,14.75Z"
+                  /> <path d="M21.5,8h-1a.5.5,0,0,0,0,1h1a.5.5,0,0,0,0-1Z" />
+                  <path
+                    d="M4,8.5A.5.5,0,0,0,3.5,8h-1a.5.5,0,0,0,0,1h1A.5.5,0,0,0,4,8.5Z"
+                  />
+                  <path
+                    d="M3.85,2.15a.49.49,0,0,0-.7.7l1,1a.48.48,0,0,0,.7,0,.48.48,0,0,0,0-.7Z"
+                  />
+                  <path
+                    d="M19.5,4a.47.47,0,0,0,.35-.15l1-1a.49.49,0,0,0-.7-.7l-1,1a.48.48,0,0,0,0,.7A.47.47,0,0,0,19.5,4Z"
+                  />
+                  <path
+                    d="M19.85,13.15a.49.49,0,0,0-.7.7l1,1a.48.48,0,0,0,.7,0,.48.48,0,0,0,0-.7Z"
+                  />
+                  <path
+                    d="M4.15,13.15l-1,1a.48.48,0,0,0,0,.7.48.48,0,0,0,.7,0l1-1a.49.49,0,0,0-.7-.7Z"
+                  />
+                  <path
+                    d="M13.15,7.15l-3,3a.47.47,0,0,0-.11.54.5.5,0,0,0,.46.31h1.79l-1.14,1.15a.48.48,0,0,0,0,.7.48.48,0,0,0,.7,0l2-2a.47.47,0,0,0,.11-.54A.5.5,0,0,0,13.5,10H11.71l2.14-2.15a.49.49,0,0,0-.7-.7Z"
+                  />
+                </g>
+              </g></svg
+            >
+            <h4
+              class="text-center font-medium text-[13px] text-slate-500 leading-7 mx-auto max-w-xs"
+            >
+              Ask me anything about the document, or just click one of the
+              options below:
+            </h4>
+          </div>
+          <div class="flex my-3 max-w-lg mx-auto mx-4 flex-col gap-3">
+            {#each suggestions as suggestion}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-missing-attribute -->
+              <a
+                on:click={() => {
+                  onSuggest(suggestion);
+                }}
+                class="bg-blue-50 cursor-pointer border-l-[3px] border-l-primary bg-opacity-30 border border-slate-200 text-slate-600 font-medium text-[12.5px] px-3 py-[6px] rounded-[3px] leading-7"
+              >
+                <div />
+                <p>{suggestion}</p>
+              </a>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>

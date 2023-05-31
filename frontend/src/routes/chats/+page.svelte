@@ -3,9 +3,6 @@
   import Loader from "@/components/ui/Loader.svelte";
   import { addToast } from "@/stores/toast";
   import { LinkIcon, UploadCloudIcon, UploadIcon } from "svelte-feather-icons";
-  import { PUBLIC_API_URL } from "$env/static/public";
-  import shortid from "shortid";
-  import supabase from "@/client/lib/supabase";
   import { auth } from "@/stores/auth";
   import client from "@/lib/client";
   import { chatsQueryKey } from "@/stores/queryKeys";
@@ -56,8 +53,128 @@
       });
   };
 
+  let url = "";
+
   let fileInput;
+
+  async function validateAndExtractFileName(url) {
+    if (url) {
+      // Check if the link matches a known cloud document pattern
+      const googleDocsPattern = /^https:\/\/docs\.google\.com\/(?:document)\//;
+      const microsoftDocsPattern = /^https:\/\/1drv\.ms\/w\/(.*)$/;
+      const notionPattern = /^(https?:\/\/)?([\w-]+)\.notion\.site\/(.*)$/;
+      if (
+        googleDocsPattern.test(url) ||
+        microsoftDocsPattern.test(url) ||
+        notionPattern.test(url)
+      ) {
+        loadingLink = true;
+        // Send the URL to the upload-cloud-docs endpoint
+        const uploadURL = "/api/upload-cloud-docs";
+        let type = "";
+        if (googleDocsPattern.test(url)) {
+          type = "google-docs";
+        } else if (microsoftDocsPattern.test(url)) {
+          type = "ms-word";
+        } else if (notionPattern.test(url)) {
+          type = "notion";
+        }
+        try {
+          const response = await fetch(uploadURL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url, type }),
+          });
+
+          if (!response.ok) {
+            loadingLink = false;
+
+            throw Error("Cloud document upload failed");
+            return null;
+          }
+
+          // Extract file name from the response if needed
+          const { fileName } = await response.json();
+
+          loadingLink = false;
+
+          return { fileName, fileType: type };
+        } catch (error) {
+          addToast({
+            title: error.message,
+            type: "danger",
+          });
+          loadingLink = false;
+          return null;
+        }
+      } else {
+        try {
+          loadingLink = true;
+          const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
+          if (!urlRegex.test(url)) {
+            throw Error("Invalid URL");
+          }
+          const filename = url.substring(url.lastIndexOf("/") + 1);
+          const fileExtension = filename
+            .substring(filename.lastIndexOf(".") + 1)
+            .toLowerCase();
+          if (
+            fileExtension !== "docx" &&
+            fileExtension !== "pdf" &&
+            fileExtension !== "md"
+          ) {
+            throw Error("Invalid file type");
+          }
+          const response = await fetch(url, { method: "HEAD" });
+          if (!response.ok) {
+            throw Error("URL does not exist or could not be accessed");
+          }
+          let fileType;
+          if (fileExtension === "docx") {
+            fileType = "docx";
+          } else if (fileExtension === "pdf") {
+            fileType = "pdf";
+          } else if (fileExtension === "md") {
+            fileType = "markdown";
+          }
+          const chat: any = await client.collection("chats").create({
+            user_id: user.id,
+            title: filename,
+            type: fileType,
+            file: url,
+            pages: 1,
+            status: "processing",
+          });
+          addToast({
+            title: "Chat created success",
+            message: "You can start chatting with your file.",
+            type: "success",
+          });
+          queryClient.invalidateQueries($chatsQueryKey);
+          setTimeout(() => {
+            goto(`/chats/${chat.id}`);
+            loadingLink = false;
+          }, 1000);
+          return filename;
+        } catch (error) {
+          addToast({
+            title: error.message,
+            type: "danger",
+          });
+          loadingLink = false;
+        }
+      }
+    }
+  }
 </script>
+
+<svelte:head>
+  <title>
+    {"Doculize"}
+  </title>
+</svelte:head>
 
 <div class="w-full border-t border-slate-300 border-b h-screen">
   <div
@@ -114,22 +231,31 @@
       {/each}
     </div>
 
-    <div
+    <form
+      on:submit={(e) => {
+        e.preventDefault();
+        validateAndExtractFileName(url);
+      }}
       class="flex border mt-3 border-primary px-3 py-3 rounded-[3px] items-center"
     >
       <LinkIcon size="16" class="text-slate-600 mx-1" />
       <input
+        bind:value={url}
         class="flex-1 text-[13.3px] text-slate-600 font-medium px-2 outline-none"
         type="text"
         placeholder="Upload file by pasting URL here."
-        name=""
-        id=""
       />
       {#if loadingLink}
         <Loader />
       {:else}
-        <UploadIcon strokeWidth={3} class="text-primary" size="16" />
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a type="submit" class="cursor-pointer">
+          <UploadIcon strokeWidth={3} class="text-primary" size="16" />
+        </a>
       {/if}
-    </div>
+    </form>
+    <p class="text-[12px] text-center text-slate-400 py-2 font-medium">
+      You can provide a Google doc link,Notion page and Microsoft docs.
+    </p>
   </div>
 </div>

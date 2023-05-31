@@ -9,14 +9,14 @@
   export let click = null;
 </script>
 
-<div class="min-h-full px-2 pt-5 pb-2 flex flex-col">
+<div class="min-h-full max-w-sm mx-auto px-2 pt-5 pb-2 flex flex-col">
   <main
     class="flex-grow flex flex-col justify-center max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8"
   >
     {#if image || icon}
       <div class="flex-shrink-0 flex justify-center">
         {#if image}
-          <img class="h-14 w-auto" src={image} alt="" />
+          <img class="h-20 w-auto" src={image} alt="" />
         {:else if icon}
           <svelte:component
             this={icon}
