@@ -2,11 +2,12 @@ import supabase from "@/client/lib/supabase";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { SupabaseVectorStore } from "langchain/vectorstores";
+import { OPENAI_API_KEY } from "$env/static/private";
 
 const generateAndStoreEmbending = async (rawDocs, fields) => {
   const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 8000,
-    chunkOverlap: 100,
+    chunkSize: 400,
+    chunkOverlap: 2,
   });
   const docs = await textSplitter.splitDocuments(rawDocs);
   const splitedDocs = docs.map((e) => ({
@@ -14,10 +15,16 @@ const generateAndStoreEmbending = async (rawDocs, fields) => {
     metadata: { ...e.metadata, ...fields },
   }));
 
-  await SupabaseVectorStore.fromDocuments(splitedDocs, new OpenAIEmbeddings(), {
-    client: supabase,
-    tableName: "chunks",
-  })
+  await SupabaseVectorStore.fromDocuments(
+    splitedDocs,
+    new OpenAIEmbeddings({
+      openAIApiKey: OPENAI_API_KEY,
+    }),
+    {
+      client: supabase,
+      tableName: "chunks",
+    }
+  )
     .then((e) => {
       console.log("embeding generated success");
     })

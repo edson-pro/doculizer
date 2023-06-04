@@ -7,8 +7,8 @@ dotenv.config();
 
 const generateAndStoreEmbending = async (rawDocs, fields) => {
   const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 8000,
-    chunkOverlap: 100,
+    chunkSize: 400,
+    chunkOverlap: 2,
   });
   const docs = await textSplitter.splitDocuments(rawDocs);
   const splitedDocs = docs.map((e) => ({
@@ -19,17 +19,19 @@ const generateAndStoreEmbending = async (rawDocs, fields) => {
   console.log("Docs splitted.");
 
   console.log("Creating vector store...");
+
+  console.log(splitedDocs);
   /* Create the vectorstore */
-  await SupabaseVectorStore.fromDocuments(splitedDocs, new OpenAIEmbeddings(), {
-    client: supabase,
-    tableName: "chunks",
-  })
-    .then((e) => {
-      console.log("embeding generated success");
-    })
-    .catch((e) => {
-      console.log(e);
-    });
+  // await SupabaseVectorStore.fromDocuments(splitedDocs, new OpenAIEmbeddings(), {
+  //   client: supabase,
+  //   tableName: "chunks",
+  // })
+  //   .then((e) => {
+  //     console.log("embeding generated success");
+  //   })
+  //   .catch((e) => {
+  //     console.log(e);
+  //   });
 };
 
 export default generateAndStoreEmbending;

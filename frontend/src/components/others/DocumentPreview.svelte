@@ -224,12 +224,12 @@
             <span
               class="text-[10px] uppercase font-semibold py-[2px] rounded-full px-2 {currentDoc.type ===
               'pdf'
-                ? 'bg-red-100 text-red-500 '
+                ? 'bg-red-100 text-red-500 dark:bg-opacity-20 '
                 : currentDoc?.type === 'docx' ||
                   currentDoc?.type === 'google-docs'
-                ? 'bg-blue-100 text-blue-500 '
+                ? 'bg-blue-100 text-blue-500 dark:bg-blue-700 dark:bg-opacity-20 '
                 : currentDoc.type === 'markdown'
-                ? 'bg-[#179fe5] bg-opacity-20 text-blue-500 '
+                ? 'bg-[#179fe5] bg-opacity-20 text-blue-500 dark:border-blue-500 '
                 : ''}"
             >
               {error ? "" : `.${currentDoc?.extension}`}

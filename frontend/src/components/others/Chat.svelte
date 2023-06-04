@@ -115,6 +115,7 @@
           }
           const decodedValue: any = new TextDecoder().decode(value);
           if (decodedValue === "[DONE]") {
+            console.log("----- done -------");
             continue;
           }
           streamingMessage = streamingMessage + decodedValue;

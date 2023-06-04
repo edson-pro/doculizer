@@ -62,6 +62,15 @@ const createChat = async ({ file, user }) => {
         status: "processing",
       });
 
+      await fetch(`/api/process-document`, {
+        method: "POST",
+        body: JSON.stringify({
+          type: fileType,
+          chat_id: chat.id,
+          url: publicUrl,
+        }),
+      });
+
       return chat;
     }
   }
