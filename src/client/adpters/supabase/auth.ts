@@ -1,6 +1,15 @@
 import supabase from "../../lib/supabase";
 import { PUBLIC_ORIGIN_URL } from "$env/static/public";
 
+const getURL = () => {
+  let url =
+    PUBLIC_ORIGIN_URL ?? // Automatically set by Vercel.
+    "http://localhost:5173/";
+
+  url = url.charAt(url.length - 1) === "/" ? url : `${url}/`;
+  return url;
+};
+
 class AuthAdapter {
   origin_url = PUBLIC_ORIGIN_URL;
   createAccount = async ({ email, password, full_name }) => {
@@ -28,7 +37,7 @@ class AuthAdapter {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: this.origin_url + redirect,
+        redirectTo: getURL(),
       },
     });
     if (error) throw Error(error.message);
@@ -78,7 +87,7 @@ class AuthAdapter {
 
   forgotPassword = async ({ email }) => {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: this.origin_url + "/?open_modal=reset_password",
+      redirectTo: getURL(),
     });
     if (error) throw Error(error.message);
     return data;
