@@ -60,7 +60,7 @@
     >
     <p class="text-[13.5px] text-slate-500 font-medium leading-7">
       By signing in, you agree to our
-      <a class="text-primary" href="/terms">Terms of Service</a>
+      <a class="text-primary" href="#">Terms of Service</a>
     </p>
   </div>
 </div>
