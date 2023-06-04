@@ -37,7 +37,7 @@ class AuthAdapter {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: getURL(),
+        redirectTo: getURL() + redirect,
       },
     });
     if (error) throw Error(error.message);
