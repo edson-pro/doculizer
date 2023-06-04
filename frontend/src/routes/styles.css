@@ -5,11 +5,11 @@
 @tailwind utilities;
 
 html {
-  @apply bg-slate-50 scroll-smooth 
+  @apply bg-slate-50 dark:bg-slate-900 scroll-smooth 
   /* color-scheme: dark; */;
 }
 body {
-  @apply overflow-x-hidden;
+  @apply overflow-x-hidden bg-slate-50 dark:bg-slate-900;
 }
 
 .scroll-hidden {

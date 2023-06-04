@@ -9,6 +9,8 @@
   import { onMount } from "svelte";
   import { QueryClient, QueryClientProvider } from "@sveltestack/svelte-query";
   import Toasts from "@/components/ui/Toasts.svelte";
+  import Theme from "@/lib/theme/Theme.svelte";
+  import { createThemeSwitcher } from "@/lib/theme";
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -29,9 +31,12 @@
   });
 
   setContext("auth", authStore);
+
+  createThemeSwitcher();
 </script>
 
 <Toasts />
+<Theme />
 
 <QueryClientProvider client={queryClient}>
   <ModalManager />

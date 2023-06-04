@@ -1,12 +1,16 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
   export let label: string = "";
   export let title: string = "";
   export let subTitle: string = "";
   export let checked: boolean = false;
+  export let id: string = "switch";
 </script>
 
 <label
-  for={label || title}
+  for={label || title || id}
   class="flex cursor-pointer justify-between w-full my-0 select-none items-start"
 >
   {#if (title || subTitle) && !label}
@@ -29,10 +33,10 @@
 
   <div class="relative">
     <input
-      {...$$props}
-      bind:checked
+      {checked}
+      on:click={(e) => dispatch("change", e)}
       type="checkbox"
-      id={label || title}
+      id={label || title || id}
       class="sr-only peer"
     />
     <div

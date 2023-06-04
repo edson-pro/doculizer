@@ -4,6 +4,7 @@
   import {
     ClockIcon,
     FileIcon,
+    LogInIcon,
     MoreVerticalIcon,
     RefreshCcwIcon,
     Trash2Icon,
@@ -30,10 +31,14 @@
 
     return `${firstHalf}...${secondHalf}`;
   }
+  let showActions = false;
+
+  export let chat;
+  export let hideSidebar;
 
   const queryClient = useQueryClient();
 
-  let deleting = false;
+  $: messagesQk = ["chats", chat.id, "messages"];
 
   const chatActions = [
     {
@@ -42,14 +47,37 @@
       click: () => {
         modals.open("confirm", {
           confirm: () => {
-            console.log("Delete Chat history");
+            modals.update("confirm", { loading: true });
+            return client
+              .collection("messages")
+              .where("chat_id", "==", chat.id)
+              .delete()
+              .then((e) => {
+                queryClient.invalidateQueries(messagesQk);
+                setTimeout(() => {
+                  modals.update("confirm", { loading: false });
+                  modals.close();
+                  addToast({
+                    message: "Chat convesation was deleted successfully",
+                    type: "success",
+                    title: "Deleted succesfully",
+                  });
+                  console.log("Delete Document");
+                }, 500);
+              });
           },
           title: "Delete all chat history",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+          desc: " Take control of your conversations and clear the slate with a single click.",
         });
       },
     },
-    { title: "Re-process document", icon: RefreshCcwIcon },
+    {
+      title: "Open document",
+      icon: LogInIcon,
+      click: () => {
+        goto(`/chats/${chat.id}`);
+      },
+    },
     {
       title: "Delete Document",
       icon: Trash2Icon,
@@ -76,17 +104,12 @@
                 }, 500);
               });
           },
-          title: "Delete this Document",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+          title: "Delete this Document.",
+          desc: "Swiftly remove this document with a single click.",
         });
       },
     },
   ];
-
-  let showActions = false;
-
-  export let chat;
-  export let hideSidebar;
 </script>
 
 <!-- svelte-ignore missing-declaration -->
@@ -107,9 +130,9 @@
     }}
     class={`${
       `/chats/${chat.id}` === $page.url.pathname
-        ? "bg-slate-200 bg-opacity-50 "
+        ? "dark:bg-slate-800 dark:bg-opacity-60 bg-slate-200 bg-opacity-50 "
         : ""
-    } flex hover:bg-slate-200 ${
+    } flex dark:hover:bg-slate-800 hover:bg-slate-200 ${
       hideSidebar ? "px-2" : "px-3"
     } relative cursor-pointer hover:bg-opacity-50 py-2 my-[6px] first-of-type:mt-0 justify-between w-full items-center gap-3`}
   >
@@ -122,11 +145,11 @@
           hideSidebar ? "h-8 w-8" : "h-10 w-10"
         } flex items-center rounded-[3px] justify-center ${
           chat.type === "pdf"
-            ? "bg-red-100 border-red-200 border "
+            ? "bg-red-100 dark:bg-red-500 dark:bg-opacity-20 dark:border-red-500 dark:border-opacity-25 border-red-200 border "
             : chat.type === "docx" || chat.type === "google-docs"
-            ? "bg-blue-100 border-blue-200 border "
+            ? "bg-blue-100 dark:bg-blue-700 dark:bg-opacity-20 dark:border-blue-500 dark:border-opacity-40 border-blue-200 border "
             : chat.type === "markdown"
-            ? "bg-[#179fe5] bg-opacity-20 border-blue-200 border "
+            ? "bg-[#179fe5] bg-opacity-20 dark:border-blue-500 dark:border-opacity-30 border-blue-200 border "
             : ""
         }`}
       >
@@ -143,12 +166,12 @@
       {#if !hideSidebar}
         <div class="flex flex-col gap-[6px]">
           <h4
-            class="text-[12.5px] truncate font-semibold text-slate-800 capitalize"
+            class="text-[12.5px] dark:text-slate-100 truncate font-semibold text-slate-800 capitalize"
           >
             {truncateString(chat.title)}
           </h4>
           <p
-            class="text-[11.8px] flex gap-2 items-center font-medium text-slate-500"
+            class="text-[11.8px] dark:text-slate-400 flex gap-2 items-center font-medium text-slate-500"
           >
             <span class="capitalize">
               {chat.type}
@@ -169,9 +192,12 @@
           e.stopPropagation();
           showActions = true;
         }}
-        class="h-7 cursor-pointer w-7 -mr-1 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+        class="h-7 cursor-pointer w-7 -mr-1 flex items-center justify-center rounded-[3px] dark:hover:bg-slate-700 hover:bg-slate-200"
       >
-        <MoreVerticalIcon class="text-slate-700" size="14" />
+        <MoreVerticalIcon
+          class="dark:text-slate-300 text-slate-700"
+          size="14"
+        />
       </a>
     {/if}
   </a>

@@ -176,13 +176,17 @@
   </title>
 </svelte:head>
 
-<div class="w-full border-t border-slate-300 border-b h-screen">
+<div
+  class="w-full border-t dark:bg-slate-900 dark:border-slate-800 border-slate-300 border-b h-screen"
+>
   <div
-    class="bg-white rounded-[3px] bg-opacity-50 p-3 max-w-xl my-32 mx-auto border border-slate-300"
+    class="bg-white dark:bg-slate-800 dark:bg-opacity-50 dark:border-slate-700 rounded-[3px] bg-opacity-50 p-3 max-w-xl my-32 mx-auto border border-slate-200"
   >
     <div class=" p-3">
       <div class="flex items-center justify-center gap-3 flex-col">
-        <div class="border border-slate-200 rounded-[3px] w-fit">
+        <div
+          class="border dark:border-slate-600 border-slate-200 rounded-[3px] w-fit"
+        >
           <input
             on:change={handleChange}
             bind:this={fileInput}
@@ -194,37 +198,40 @@
             on:click={(e) => {
               fileInput.click();
             }}
-            class="bg-slate-50 cursor-pointer border-white border-4 flex justify-center items-center rounded-[3px] w-[150px] h-20"
+            class="bg-slate-50 dark:bg-slate-800 dark:bg-opacity-50 cursor-pointer border-white dark:border-opacity-40 dark:border-slate-700 border-4 flex justify-center items-center rounded-[3px] w-[150px] h-20"
           >
             {#if uploadingFile}
               <CircleSpinner />
             {:else}
-              <UploadCloudIcon class="text-slate-500" />
+              <UploadCloudIcon class="text-slate-500 dark:text-slate-300" />
             {/if}
           </div>
         </div>
-        <h4 class="font-semibold mt-2 text-sm to-slate-700 leading-7">
-          Drag and drop files here to chat with
+        <h4
+          class="font-semibold mt-2 dark:text-slate-200 text-sm text-slate-700 leading-7"
+        >
+          Drag and drop files here to chat with.
         </h4>
-        <p class="text-[13px] font-medium text-slate-500">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        <p class="text-[13px] dark:text-slate-400 font-medium text-slate-500">
+          Effortlessly exchange files in the chat by dragging and dropping them
+          here.
         </p>
       </div>
     </div>
 
     <div class="relative flex py-5 items-center">
-      <div class="flex-grow border-t border-gray-200" />
+      <div class="flex-grow border-t dark:border-gray-700 border-gray-200" />
       <span
         class="flex-shrink font-medium mx-4 text-[13px] capitalize text-gray-500"
         >or connet to</span
       >
-      <div class="flex-grow border-t border-gray-200" />
+      <div class="flex-grow border-t dark:border-gray-700 border-gray-200" />
     </div>
     <div class="flex items-center p-4 justify-center gap-4">
       {#each providers as provider}
         <a
           href=""
-          class="h-12 cursor-default pointer-events-none hover:bg-slate-100 w-12 flex justify-center items-center border border-slate-200 rounded-[3px]"
+          class="h-12 cursor-default pointer-events-none hover:bg-slate-100 w-12 flex justify-center items-center border dark:border-slate-700 border-slate-200 rounded-[3px]"
         >
           <img class="h-7 w-6 object-contain" src={provider.icon} alt="" />
         </a>
@@ -236,12 +243,12 @@
         e.preventDefault();
         validateAndExtractFileName(url);
       }}
-      class="flex border mt-3 border-primary px-3 py-3 rounded-[3px] items-center"
+      class="flex border dark:bg-slate-700 dark:bg-opacity-20 mt-3 dark:border-opacity-40 border-primary px-3 py-3 rounded-[3px] items-center"
     >
       <LinkIcon size="16" class="text-slate-600 mx-1" />
       <input
         bind:value={url}
-        class="flex-1 text-[13.3px] text-slate-600 font-medium px-2 outline-none"
+        class="flex-1 text-[13.3px] bg-transparent dark:text-slate-400 dark:placeholder:text-slate-500 text-slate-600 font-medium px-2 outline-none"
         type="text"
         placeholder="Upload file by pasting URL here."
       />

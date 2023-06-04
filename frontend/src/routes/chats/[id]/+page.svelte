@@ -87,7 +87,7 @@
 </svelte:head>
 
 <div
-  class="w-full flex border-t border-slate-300 border-b items-center h-screen"
+  class="w-full flex border-t dark:border-slate-700 border-slate-300 border-b items-center h-screen"
 >
   <DocumentPreview
     {messagesQk}

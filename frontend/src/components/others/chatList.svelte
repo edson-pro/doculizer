@@ -3,6 +3,8 @@
   import Avatar from "../ui/Avatar.svelte";
   import CodePreview from "./CodePreview.svelte";
   import CircleSpinner from "../ui/CircleSpinner.svelte";
+  import { onMount } from "svelte";
+  import { afterUpdate } from "svelte";
 
   export let messages;
   export let loading;
@@ -14,10 +16,28 @@
     "What is the monthly gross remuneration for a Software Developer at Unit U+2467 GmbH.",
     "What are the confidentiality agreements that an Employee must adhere to with respect to Ape Unit, KB21.",
   ];
+
+  let scrollContainer;
+
+  function scrollContainerToBottom() {
+    scrollContainer.scrollTo({
+      top: scrollContainer.scrollHeight,
+      behavior: "smooth",
+    });
+  }
+
+  onMount(() => {
+    scrollContainerToBottom(); // Scroll to bottom when the component is mounted
+  });
+
+  afterUpdate(() => {
+    scrollContainerToBottom(); // Scroll to bottom when messages change
+  });
 </script>
 
 <div
-  class="scrollbar scrollbar-thin- scrollbar-w-1 scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thin- scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 p-4- h-full"
+  bind:this={scrollContainer}
+  class="scrollbar scrollbar-thin- scrollbar-w-1 dark:scrollbar-corner-slate-300 scrollbar-corner-slate-600 scrollbar-thumb-rounded dark:scrollbar-thumb-slate-400 scrollbar-thumb-slate-400 dark:scrollbar-track-slate-700 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 p-4- h-full"
 >
   {#if loading}
     <div class="h-full w-full flex items-center justify-center">
@@ -27,7 +47,9 @@
   {#each messages as chat}
     <div
       class={`flex p-4 gap-4 items-start ${
-        chat.role === "user" ? "bg-slate-100" : ""
+        chat.role === "user"
+          ? "bg-slate-100 dark:bg-slate-800 dark:bg-opacity-40"
+          : ""
       }`}
     >
       <div>
@@ -75,7 +97,7 @@
       <div>
         {#if chat.role === "user"}
           <p
-            class="text-[13px] font-medium text-slate-700 text-opacity-95 leading-8"
+            class="text-[13px] font-medium dark:text-slate-300 text-slate-700 text-opacity-95 leading-8"
           >
             {chat.content}
           </p>
@@ -83,7 +105,7 @@
         {#if chat.role === "system"}
           <div
             id="wrapper"
-            class="p-5- -mt-1 font-medium prose-headings:mb-3 prose-p:mb-3 prose-p:text-slate-500 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
+            class="p-5- -mt-1 font-medium prose-headings:mb-3 prose-p:mb-3 dark:prose-p:text-slate-400 prose-p:text-slate-500 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
           >
             <SvelteMarkdown
               source={chat.content}
@@ -139,7 +161,7 @@
               </g></svg
             >
             <h4
-              class="text-center font-medium text-[13px] text-slate-500 leading-7 mx-auto max-w-xs"
+              class="text-center font-medium text-[13px] dark:text-slate-400 text-slate-500 leading-7 mx-auto max-w-xs"
             >
               Ask me anything about the document, or just click one of the
               options below:
@@ -153,7 +175,7 @@
                 on:click={() => {
                   onSuggest(suggestion);
                 }}
-                class="bg-blue-50 cursor-pointer border-l-[3px] border-l-primary bg-opacity-30 border border-slate-200 text-slate-600 font-medium text-[12.5px] px-3 py-[6px] rounded-[3px] leading-7"
+                class="bg-blue-50 dark:border-slate-700 cursor-pointer border-l-[3px] dark:border-l-primary border-l-primary dark:bg-opacity-50 dark:bg-slate-800 bg-opacity-30 border border-slate-200 dark:text-slate-300 text-slate-600 font-medium text-[12.5px] px-3 py-[6px] rounded-[3px] leading-7"
               >
                 <div />
                 <p>{suggestion}</p>

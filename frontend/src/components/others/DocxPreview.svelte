@@ -27,7 +27,7 @@
   };
 
   $: docResult = useQuery({
-    queryKey: ["chats", $page.params.id, "file"],
+    queryKey: ["chats", $page.params.id, url],
     queryFn: fetcher,
     enabled: user && !authLoading,
     refetchOnWindowFocus: false,

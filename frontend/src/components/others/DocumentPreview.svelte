@@ -8,6 +8,7 @@
     MoreVerticalIcon,
     RefreshCcwIcon,
     Trash2Icon,
+    XCircleIcon,
     XIcon,
   } from "svelte-feather-icons";
   import Docx from "../vectors/documents/Docx.svelte";
@@ -118,11 +119,17 @@
               });
           },
           title: "Delete all chat history",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+          desc: " Take control of your conversations and clear the slate with a single click.",
         });
       },
     },
-    { title: "Re-process document", icon: RefreshCcwIcon },
+    {
+      title: "close document",
+      icon: XCircleIcon,
+      click: () => {
+        goto("/chats");
+      },
+    },
     {
       title: "Delete Document",
       icon: Trash2Icon,
@@ -150,17 +157,19 @@
                 }, 500);
               });
           },
-          title: "Delete this Document",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+          title: "Delete this Document.",
+          desc: "Swiftly remove this document with a single click.",
         });
       },
     },
   ];
 </script>
 
-<div class="w-[55%] relative flex flex-col border-r h-full border-slate-300">
+<div
+  class="w-[55%] relative flex flex-col border-r h-full dark:border-slate-700 border-slate-300"
+>
   <div
-    class="flex bg-white relative items-center px-4 justify-between border-b border-slate-300 py-[10.5px]"
+    class="flex dark:bg-slate-900 bg-white relative items-center px-4 justify-between border-b dark:border-slate-700 border-slate-300 py-[10.5px]"
   >
     <div class="flex gap-3 items-center">
       {#if hideSidebar}
@@ -169,7 +178,7 @@
             handleCallapse();
           }}
           href="#"
-          class="h-7 w-7 mr-3 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+          class="h-7 w-7 mr-3 flex dark:text-slate-300 items-center justify-center rounded-[3px] dark:hover:bg-slate-800 hover:bg-slate-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -208,7 +217,7 @@
         <Skeleton customClass="h-4 w-[120px]" />
       {:else}
         <div class="flex items-center gap-2">
-          <h4 class="font-semibold capitalize text-[13px]">
+          <h4 class="font-semibold dark:text-slate-100 capitalize text-[13px]">
             {error ? error : currentDoc?.title}
           </h4>
           {#if currentDoc}
@@ -291,9 +300,12 @@
             showMenu = true;
           }
         }}
-        class="h-7 w-7 cursor-pointer -mr-[6px] flex items-center justify-center rounded-[3px] hover:bg-slate-100"
+        class="h-7 w-7 cursor-pointer -mr-[6px] flex items-center justify-center rounded-[3px] dark:hover:bg-slate-800 hover:bg-slate-100"
       >
-        <MoreVerticalIcon class="text-slate-700" size="15" />
+        <MoreVerticalIcon
+          class="dark:text-slate-300 text-slate-700"
+          size="15"
+        />
       </a>
       {#if showMenu}
         <Menu
@@ -311,14 +323,14 @@
   />
   <div class="w-full z-50 absolute bottom-0 px-3 h-[55px]">
     <div
-      class="w-[80%] mx-auto h-[45px]- py-2 shadow-md bg-opacity-80 backdrop-blur-sm rounded-[3px] bg-white border border-slate-300"
+      class="w-[80%] mx-auto h-[45px]- py-2 shadow-md bg-opacity-80 backdrop-blur-sm rounded-[3px] dark:bg-slate-900 bg-white border dark:border-t-slate-700 dark:border-slate-700 border-slate-300"
     >
       <div class="flex items-center px-2 w-full justify-between">
         <a
-          class="h-7 w-7 -mr-[6px] flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+          class="h-7 w-7 -mr-[6px] flex items-center justify-center rounded-[3px] dark:hover:bg-slate-800 hover:bg-slate-200"
           href=""
         >
-          <ListIcon class="text-slate-600" size="20" />
+          <ListIcon class="dark:text-slate-500 text-slate-600" size="20" />
         </a>
         <div class="flex items-center gap-3">
           <a href="">
@@ -329,10 +341,10 @@
             />
           </a>
           <div
-            class="text-[12px] flex items-center gap-3 font-semibold text-slate-500"
+            class="text-[12px] flex items-center gap-3 font-semibold dark:text-slate-300 text-slate-500"
           >
             <span
-              class="h-7 w-9 rounded-[3px] flex justify-center items-center text-primary border border-indigo-300 bg-indigo-100"
+              class="h-7 w-9 rounded-[3px] flex justify-center items-center text-primary border dark:border-indigo-600 dark:border-opacity-30 border-indigo-300 dark:bg-opacity-10 dark:bg-indigo-400 bg-indigo-100"
               >{currentIntersection}</span
             >
             <span>/</span>
@@ -342,15 +354,15 @@
             <ChevronRightIcon
               strokeWidth={2.5}
               size="16"
-              class="text-slate-500"
+              class="dark:text-slate-400 text-slate-500"
             />
           </a>
         </div>
         <a
-          class="h-7 w-7 flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+          class="h-7 w-7 flex items-center dark:hover:bg-slate-800 justify-center rounded-[3px] hover:bg-slate-200"
           href=""
         >
-          <XIcon strokeWidth={2.5} size="16" class="text-slate-500" />
+          <XIcon strokeWidth={2.5} size="16" class="text-slate-400" />
         </a>
       </div>
     </div>
@@ -358,12 +370,14 @@
   <div
     on:scroll={parseScroll}
     bind:this={documentScroll}
-    class="scrollbar scrollbar-thin- scrollbar-w-1 scrollbar-corner-slate-600 scrollbar-thumb-rounded scrollbar-thumb-slate-400 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 bg-slate-200"
+    class="scrollbar scrollbar-thin- scrollbar-w-1 dark:scrollbar-corner-slate-300 scrollbar-corner-slate-600 scrollbar-thumb-rounded dark:scrollbar-thumb-slate-400 scrollbar-thumb-slate-400 dark:scrollbar-track-slate-700 scrollbar-track-white flex-1 overflow-y-scroll relative pb-3 bg-opacity-50 dark:bg-slate-800 bg-slate-200"
   >
-    <div class="w-full h-full mb-2 border-r border-slate-300 p-4">
+    <div
+      class="w-full h-full mb-2 border-r dark:border-slate-700 border-slate-300 p-4"
+    >
       {#if loading || error}
         <div
-          class="w-full flex items-center justify-center max-w-[630px] mx-auto h-[650px] my-3 first:mt-0 border overflow-hidden border-slate-300 bg-white rounded-[3px]"
+          class="w-full flex items-center justify-center max-w-[630px] mx-auto h-[650px] my-3 first:mt-0 border overflow-hidden dark:border-slate-700 border-slate-300 dark:bg-slate-900 bg-white rounded-[3px]"
         >
           {#if error}
             <Empty

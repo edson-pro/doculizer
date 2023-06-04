@@ -10,6 +10,7 @@
     RefreshCcwIcon,
     SearchIcon,
     SettingsIcon,
+    SunIcon,
     Trash2Icon,
     UploadCloudIcon,
     XIcon,
@@ -38,6 +39,8 @@
   import createChat from "@/utils/createChat";
   import { addToast } from "@/stores/toast";
   import ChatItem from "./ChatItem.svelte";
+  import Switch from "../ui/Switch.svelte";
+  import { getThemeStore } from "@/lib/theme/context";
 
   const handleCallapse = () => {
     setUiState({ ...$uiState, hideSidebar: true });
@@ -69,7 +72,7 @@
             modals.update("confirm", { loading: true });
             return client
               .collection("chats")
-              .where("user_id", "==", user.id)
+              .where("user_id", "==", user?.id)
               .delete()
               .then((e) => {
                 queryClient.invalidateQueries($chatsQueryKey);
@@ -86,11 +89,11 @@
               });
           },
           title: "Delete all documents",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+          desc: "Delete your files and start fresh by deleting all documents in one go.",
         });
       },
     },
-    { title: "Settings", icon: SettingsIcon },
+    { title: "Dark mode", icon: SunIcon, onSwitch: () => {} },
     {
       title: "Logout",
       icon: LogOutIcon,
@@ -110,8 +113,8 @@
                 });
             }, 2000);
           },
-          title: "Logout your account",
-          desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+          title: "Logout your account.",
+          desc: "Sign out instantly for enhanced security.",
         });
       },
     },
@@ -124,22 +127,25 @@
 
   const fetcher = ({ queryKey }) => {
     const filters = queryKey[1];
-    const q = client.collection("chats").where("user_id", "==", user.id);
+    const q = client.collection("chats").where("user_id", "==", user?.id);
 
     if (filters?.search) q.search("title", filters?.search);
 
-    return q.get().then((e: any) =>
-      e.map((e) => {
-        return {
-          ...e,
-          created_at: new Date(e?.created_at).toLocaleDateString("en-US", {
-            day: "2-digit",
-            year: "numeric",
-            month: "short",
-          }),
-        };
-      })
-    );
+    return q
+      .limit(7)
+      .get()
+      .then((e: any) =>
+        e.map((e) => {
+          return {
+            ...e,
+            created_at: new Date(e?.created_at).toLocaleDateString("en-US", {
+              day: "2-digit",
+              year: "numeric",
+              month: "short",
+            }),
+          };
+        })
+      );
   };
 
   let searchText = "";
@@ -160,7 +166,7 @@
   $: chatsResult = useQuery({
     queryKey: ["chats", { search: searchText }],
     queryFn: fetcher,
-    enabled: user && !authLoading,
+    enabled: Boolean(user) && !authLoading,
     keepPreviousData: true,
   });
   let uploadingFile = false;
@@ -181,7 +187,7 @@
         });
         queryClient.invalidateQueries($chatsQueryKey);
         setTimeout(() => {
-          goto(`/chats/${data.id}`);
+          goto(`/chats/${data?.id}`);
         }, 1000);
       })
       .catch((e) => {
@@ -195,20 +201,29 @@
   };
 
   $: chats = $chatsResult?.data || [];
+
+  const theme: any = getThemeStore();
+
+  $: currentTheme = $theme;
 </script>
 
 <div
   class="{hideSidebar
     ? ' w-[50px]'
-    : ' w-[400px]'} h-screen bg-white border-t border-b flex flex-col border-r border-slate-300"
+    : ' w-[400px]'} h-screen dark:bg-slate-900 bg-white border-t border-b flex flex-col border-r dark:border-slate-700 dark:bg-opacity-50 border-slate-300"
 >
-  <div class="px-2 py-2 w-full border-b border-slate-300">
+  <div
+    class="px-2 py-2 w-full border-b dark:border-slate-700 dark:bg-opacity-50 border-slate-300"
+  >
     <div class="flex items-center w-full justify-between gap-2">
       <a href="/chats">
         <img class="h-8 w-8 rounded-[3px]" src="/images/logo.png" alt="" />
       </a>
       {#if !hideSidebar}
-        <a href="/chats" class="flex items-center gap-2">
+        <a
+          href="/chats"
+          class="flex dark:text-slate-100 text-slate-900 items-center gap-2"
+        >
           <GridIcon size="18" />
           <span class="font-semibold text-[13.5px]"> Documents </span>
         </a>
@@ -218,7 +233,7 @@
           on:click={() => {
             handleCallapse();
           }}
-          class="h-8 w-8 cursor-pointer flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+          class="h-8 w-8 cursor-pointer flex items-center justify-center rounded-[3px] dark:text-slate-200 dark:hover:bg-slate-800 hover:bg-slate-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -243,16 +258,16 @@
     <div
       class="flex border {hideSidebar
         ? 'cursor-pointer  px-2 py-2'
-        : ' px-3 py-[8px]'} mx-2 my-2 focus-within:border-primary border-slate-200 bg-opacity-30 items-center gap-1 bg-slate-200 rounded-[3px]"
+        : ' px-3 py-[8px]'} mx-2 my-2 focus-within:border-primary dark:border-slate-700 dark:bg-opacity-50 dark:border-opacity-40 border-slate-200 bg-opacity-30 items-center gap-1 dark:bg-opacity-50 dark:bg-slate-800 bg-slate-200 rounded-[3px]"
     >
-      <SearchIcon size="15" class="text-slate-700" />
+      <SearchIcon size="15" class="dark:text-slate-300 text-slate-700" />
       {#if !hideSidebar}
         <input
           on:keyup={({ target: { value } }) => debounce(value)}
           value={searchText}
           type="text"
           placeholder="Search here.."
-          class=" bg-transparent px-2 w-full font-medium text-slate-600 text-[13px] outline-none"
+          class=" bg-transparent px-2 w-full font-medium dark:text-slate-400 dark:placeholder:text-slate-400 text-slate-600 text-[13px] outline-none"
         />
       {/if}
       {#if $chatsResult.isFetching && $chatsResult.data}
@@ -271,7 +286,9 @@
         </a>
       {/if}
     </div>
-    <div class="flex-1 flex flex-col border-t border-slate-200 h-full">
+    <div
+      class="flex-1 flex flex-col border-t dark:border-slate-700 dark:bg-opacity-50 border-slate-200 h-full"
+    >
       <div class="px-0 w-full h-full">
         {#if $chatsResult.status === "loading"}
           <div class="h-[200px] w-full flex items-center justify-center">
@@ -284,7 +301,7 @@
           >
             <img class="w-[120px]" src="/images/empty.svg" alt="" />
             <p
-              class="text-center max-w-[230px] leading-7 text-slate-500 text-[13px] font-medium"
+              class="text-center max-w-[230px] leading-7 dark:text-slate-400 text-slate-500 text-[13px] font-medium"
             >
               There are currently no documents, Please <a
                 on:click={() => {
@@ -309,7 +326,7 @@
           ? 'pointer-events-none opacity-50'
           : ''} bg-slate-100 relative cursor-pointer flex {!hideSidebar
           ? 'm-3 py-5'
-          : 'm-2 py-2'} text-center border border-slate-300 border-dashed rounded-[3px] flex-col justify-center items-center gap-3"
+          : 'm-2 py-2'} text-center border dark:border-slate-700 dark:bg-opacity-50 dark:bg-slate-800 border-slate-300 border-dashed rounded-[3px] flex-col justify-center items-center gap-3"
       >
         {#if uploadingFile}
           <LoadingOverlay />
@@ -323,7 +340,7 @@
           id=""
         />
         <UploadCloudIcon
-          class="text-slate-600"
+          class="text-slate-600 dark:text-slate-300"
           size={!hideSidebar ? "20" : "16"}
         />
         {#if !hideSidebar}
@@ -338,17 +355,21 @@
             <PlusIcon strokeWidth={3} size="14" />
             <span>Create New chat</span>
           </a>
-          <p class="text-[13px] capitalize text-slate-500 font-medium">
+          <p
+            class="text-[13px] dark:text-slate-300 capitalize text-slate-500 font-medium"
+          >
             click to Upload a document.
           </p>
         {/if}
       </div>
     </div>
-    <div class="border-t relative border-slate-200 pt-0">
+    <div
+      class="border-t dark:border-slate-700 dark:bg-opacity-30 relative border-slate-200 pt-0"
+    >
       <div
         class="{!hideSidebar
           ? 'px-3  justify-between'
-          : 'justify-center'} w-full flex items-center mx-[6px]- py-[6px] cursor-pointer rounded-[3px]- hover:bg-slate-200 hover:bg-opacity-30 hover:border-slate-200- border border-transparent"
+          : 'justify-center'} w-full flex items-center mx-[6px]- py-[6px] cursor-pointer rounded-[3px]- dark:hover:bg-slate-800 dark:hover:bg-opacity-40 hover:bg-slate-200 hover:bg-opacity-30 hover:border-slate-200- border border-transparent"
       >
         {#if showProfileDropdown}
           <!-- svelte-ignore missing-declaration -->
@@ -365,30 +386,53 @@
               start: 0.95,
               easing: linear,
             }}
-            class="absolute rounded-[3px] p-1 left-1 bottom-14 border border-slate-200 shadow-sm bg-white w-[97%] mx-auto"
+            class="absolute rounded-[3px] p-1 left-1 bottom-14 border dark:border-slate-700 dark:bg-opacity border-slate-200 shadow-sm dark:bg-slate-900 bg-white w-[97%] mx-auto"
           >
             <ul>
               {#each actions as action}
-                <li>
+                <li class="w-full">
                   <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <!-- svelte-ignore a11y-missing-attribute -->
                   <a
                     on:click={(e) => {
-                      showProfileDropdown = false;
-                      action.click();
+                      if (action.click) {
+                        showProfileDropdown = false;
+                        action.click();
+                      }else{
+                        if(action.onSwitch){
+                            theme.setTheme(
+                              currentTheme === "dark" ? "light" : "dark"
+                            );
+                        }
+                      }
                     }}
-                    class="flex cursor-pointer hover:bg-slate-100 rounded-[3px] my-1 items-center gap-2 py-2 px-2"
+                    class="flex cursor-pointer justify-between w-full dark:hover:bg-slate-800 hover:bg-slate-100 rounded-[3px] my-1 items-center gap-2 py-2 px-2"
                   >
-                    <svelte:component
-                      this={action.icon}
-                      class="text-slate-600"
-                      size={"16"}
-                    />
-                    <span
-                      class="text-[13px] text-slate-600 font-medium capitalize"
-                    >
-                      {action.title}
-                    </span>
+                    <div class="flex items-center flex-1 w-full gap-2">
+                      <svelte:component
+                        this={action.icon}
+                        class="dark:text-slate-400 text-slate-600"
+                        size={"16"}
+                      />
+                      <span
+                        class="text-[13px] dark:text-slate-300 text-slate-600 font-medium capitalize"
+                      >
+                        {action.title}
+                      </span>
+                    </div>
+
+                    <div>
+                      {#if action.onSwitch}
+                        <Switch
+                          checked={currentTheme === "dark"}
+                          on:change={(e) => {
+                            theme.setTheme(
+                              currentTheme === "dark" ? "light" : "dark"
+                            );
+                          }}
+                        />
+                      {/if}
+                    </div>
                   </a>
                 </li>
               {/each}
@@ -420,7 +464,9 @@
           {#if !hideSidebar}
             <div class="w-full">
               {#if user}
-                <p class="font-medium text-[13.5px] capitalize text-slate-700">
+                <p
+                  class="font-medium dark:text-slate-200 text-[13.5px] capitalize text-slate-700"
+                >
                   {user?.username}
                 </p>
               {:else}
@@ -438,9 +484,12 @@
                 showProfileDropdown = !showProfileDropdown;
               }
             }}
-            class="h-8 w-8 cursor-pointer flex items-center justify-center rounded-[3px] hover:bg-slate-200"
+            class="h-8 w-8 cursor-pointer flex items-center justify-center rounded-[3px] dark:hover:bg-slate-800 hover:bg-slate-200"
           >
-            <MoreHorizontalIcon class="text-slate-600" size="16" />
+            <MoreHorizontalIcon
+              class="dark:text-slate-300 text-slate-600"
+              size="16"
+            />
           </a>
         {/if}
       </div>

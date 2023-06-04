@@ -48,7 +48,7 @@
           });
       },
       title: "Delete all chat history",
-      desc: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Itaque vertenetur quod eius.",
+      desc: " Take control of your conversations and clear the slate with a single click.",
     });
   };
 
@@ -85,6 +85,7 @@
         body: JSON.stringify({
           question,
           history,
+          chat_id: chat?.id,
         }),
       });
 
@@ -134,25 +135,31 @@
   $: console.log("streaming ---", streamingMessage);
 </script>
 
-<div class="w-[45%] bg-white flex h-full flex-col">
+<div class="w-[45%] dark:bg-slate-900 bg-white flex h-full flex-col">
   <div
-    class="flex items-center px-4 justify-between border-b border-slate-300 py-[10.5px]"
+    class="flex items-center px-4 justify-between dark:border-slate-700 border-b border-slate-300 py-[10.5px]"
   >
     <div class="flex gap-3 items-center">
       <div class="flex items-center text-slate-800 gap-2">
-        <MessageSquareIcon strokeWidth={2.5} size="16" />
-        <h4 class="font-semibold capitalize text-[13px]">Chat.</h4>
+        <MessageSquareIcon
+          class="dark:text-slate-100"
+          strokeWidth={2.5}
+          size="16"
+        />
+        <h4 class="font-semibold dark:text-slate-100 capitalize text-[13px]">
+          Chat.
+        </h4>
       </div>
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-missing-attribute -->
     <a
-      class="h-7 w-7 cursor-pointer -mr-[6px] flex items-center justify-center rounded-[3px] hover:bg-slate-100"
+      class="h-7 w-7 cursor-pointer -mr-[6px] flex items-center justify-center rounded-[3px] dark:hover:bg-slate-800 hover:bg-slate-100"
       on:click={() => {
         handleClear();
       }}
       ><svg
-        class="fill-slate-700"
+        class="fill-slate-700 dark:fill-slate-100"
         height="15"
         width="15"
         viewBox="0 0 16 16"
@@ -179,18 +186,18 @@
   />
 
   <div
-    class="px-3 border-t border-slate-300 bg-slate-100 bg-opacity-60 pt-[10px] pb-1"
+    class="px-3 border-t dark:border-slate-700 border-slate-300 dark:bg-slate-800 dark:bg-opacity-50 bg-slate-100 bg-opacity-80 pt-[10px] pb-1"
   >
     <form
       on:submit|preventDefault={() => handleSubmit({ message })}
-      class="flex px-[10px] py-3 bg-white border-opacity-50 border-primary items-center border border-slate-300- rounded-[3px]"
+      class="flex px-[10px] py-3 dark:bg-slate-900 dark:bg-opacity-80 bg-white border-opacity-50 border-primary items-center border border-slate-300- rounded-[3px]"
     >
       <input
         bind:value={message}
         type="text"
         disabled={loading || Boolean(streamingMessage)}
         placeholder="Ask me anyhting about this document.."
-        class="w-full px-1 text-slate-700 placeholder:text-slate-500 text-[13px] font-medium outline-none bg-transparent"
+        class="w-full px-1 dark:text-slate-300 text-slate-700 dark:placeholder:text-slate-400 placeholder:text-slate-500 text-[13px] font-medium outline-none bg-transparent"
       />
       {#if loading}
         <CircleSpinner />
@@ -221,7 +228,13 @@
           >
         </a>
       {:else}
-        <a href="#" type="submit">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a
+          on:click={() => handleSubmit({ message })}
+          class="cursor-pointer"
+          type="submit"
+        >
           <svg
             height="21"
             width="21"

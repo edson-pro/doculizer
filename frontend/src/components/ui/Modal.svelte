@@ -55,7 +55,7 @@
         }}
         class=" {noBackground
           ? ''
-          : 'dark:bg-slate-900 bg-white shadow-sm'} relative inline-block rounded-[3px] transform transition-all my-8 align-middle w-full
+          : 'dark:bg-slate-900 bg-white shadow-sm'} dark:border dark:border-slate-800 relative inline-block rounded-[3px] transform transition-all my-8 align-middle w-full
                 {sizeClass}
               "
       >
