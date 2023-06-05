@@ -95,54 +95,54 @@
 
       const stream: any = res.body;
       const reader = stream.getReader();
-      console.log(res.statusText);
-      if (res.statusText === "OK") {
-        loading = false;
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done || value === "[DONE]") {
-              console.log("done");
-              const sytemAnswer = {
-                role: "system",
-                content: streamingMessage,
-              };
-              const userQuestion = {
-                role: "user",
-                content: question,
-              };
-              streamingMessage = "";
+      // console.log(res.statusText);
+      // if (res.statusText === "OK") {
+      loading = false;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done || value === "[DONE]") {
+            console.log("done");
+            const sytemAnswer = {
+              role: "system",
+              content: streamingMessage,
+            };
+            const userQuestion = {
+              role: "user",
+              content: question,
+            };
+            streamingMessage = "";
 
-              setMessages([...messages, sytemAnswer]);
-              await storeMessages([userQuestion, sytemAnswer]);
+            setMessages([...messages, sytemAnswer]);
+            await storeMessages([userQuestion, sytemAnswer]);
 
-              break;
-            }
-            const decodedValue: any = new TextDecoder().decode(value);
-            if (decodedValue === "[DONE]") {
-              console.log("----- done -------");
-              continue;
-            }
-            streamingMessage = streamingMessage + decodedValue;
+            break;
           }
-        } catch (error) {
-          console.error(error);
-        } finally {
-          reader.releaseLock();
-          console.log("finaly");
+          const decodedValue: any = new TextDecoder().decode(value);
+          if (decodedValue === "[DONE]") {
+            console.log("----- done -------");
+            continue;
+          }
+          streamingMessage = streamingMessage + decodedValue;
         }
-      } else {
-        const { value } = await reader.read();
-        const decodedValue: any = new TextDecoder().decode(value);
-        streamingMessage = "";
-        loading = false;
-        const sytemAnswer = {
-          role: "system",
-          content: JSON.parse(decodedValue).message,
-          status: "error",
-        };
-        setMessages([...messages, sytemAnswer]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        reader.releaseLock();
+        console.log("finaly");
       }
+      // } else {
+      //   const { value } = await reader.read();
+      //   const decodedValue: any = new TextDecoder().decode(value);
+      //   streamingMessage = "";
+      //   loading = false;
+      //   const sytemAnswer = {
+      //     role: "system",
+      //     content: JSON.parse(decodedValue).message,
+      //     status: "error",
+      //   };
+      //   setMessages([...messages, sytemAnswer]);
+      // }
     }
   };
 
