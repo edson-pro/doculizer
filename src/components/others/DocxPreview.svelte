@@ -45,7 +45,7 @@
   >
     <div
       id="wrapper"
-      class="p-7 dark:prose-headings:text-slate-100 dark:prose-strong:text-slate-200 dark:prose-invert prose-h3:font-medium prose-h3:text-[14px] prose-h2:font-semibold prose-h2:text-[15px] prose-h2:first-letter:capitalize prose-headings:mb-3 prose-p:mb-3 dark:prose-p:font-medium dark:prose-p:text-slate-400 prose-p:text-slate-600 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
+      class="preview-typo"
     >
       {#if isLoading}
         <div class="h-[620px] w-full flex justify-center items-center">

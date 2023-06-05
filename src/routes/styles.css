@@ -11,6 +11,9 @@ html {
 body {
   @apply overflow-x-hidden bg-slate-50 dark:bg-slate-900;
 }
+.preview-typo {
+  @apply p-7 prose-p:text-[13px] prose-li:text-[13px] prose-h2:text-base prose-p:leading-8 prose-headings:font-semibold prose-li:leading-8 prose prose-sm prose-a:text-blue-500 prose-lead:leading-8 prose-slate dark:prose-invert;
+}
 
 .scroll-hidden {
   -ms-overflow-style: none; /* Internet Explorer 10+ */

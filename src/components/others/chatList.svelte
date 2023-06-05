@@ -5,6 +5,7 @@
   import CircleSpinner from "../ui/CircleSpinner.svelte";
   import { onMount } from "svelte";
   import { afterUpdate } from "svelte";
+  import Link from "./Link.svelte";
 
   export let messages;
   export let loading;
@@ -105,11 +106,13 @@
         {#if chat.role === "system"}
           <div
             id="wrapper"
-            class="p-5- -mt-1 font-medium prose-headings:mb-3 prose-p:mb-3 dark:prose-p:text-slate-400 prose-p:text-slate-500 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
+            class="{chat.status === 'error'
+              ? 'border border-red-500 mt-[2px] prose-p:!mb-0 prose-p:dark:!text-slate-300 prose-p:!text-slate-700 rounded-[3px] px-3 bg-red-500 dark:bg-opacity-25 bg-opacity-10'
+              : ''} p-5- -mt-1 prose-a:text-blue-500 font-medium prose-headings:mb-3 prose-p:mb-3 dark:prose-p:text-slate-400 prose-p:text-slate-500 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
           >
             <SvelteMarkdown
               source={chat.content}
-              renderers={{ code: CodePreview }}
+              renderers={{ code: CodePreview, link: Link }}
             />
           </div>
         {/if}
@@ -175,7 +178,9 @@
                 on:click={() => {
                   onSuggest(suggestion);
                 }}
-                class="bg-blue-50 dark:border-slate-700 cursor-pointer border-l-[3px] dark:border-l-primary border-l-primary dark:bg-opacity-50 dark:bg-slate-800 bg-opacity-30 border border-slate-200 dark:text-slate-300 text-slate-600 font-medium text-[12.5px] px-3 py-[6px] rounded-[3px] leading-7"
+                class="{loading
+                  ? 'pointer-events-none opacity-75'
+                  : ''} bg-blue-50 dark:border-slate-700 cursor-pointer border-l-[3px] dark:border-l-primary border-l-primary dark:bg-opacity-50 dark:bg-slate-800 bg-opacity-30 border border-slate-200 dark:text-slate-300 text-slate-600 font-medium text-[12.5px] px-3 py-[6px] rounded-[3px] leading-7"
               >
                 <div />
                 <p>{suggestion}</p>

@@ -16,7 +16,7 @@
       icon: "/images/google-docs.png",
     },
     { name: "Microsoft docx", icon: "/images/ms-word.png" },
-    { name: "Notion pages", icon: "/images/notion.svg" },
+    // { name: "Notion pages", icon: "/images/notion.svg" },
   ];
 
   let loadingLink = false;
@@ -180,7 +180,9 @@
   class="w-full border-t dark:bg-slate-900 dark:border-slate-800 border-slate-300 border-b h-screen"
 >
   <div
-    class="bg-white dark:bg-slate-800 dark:bg-opacity-50 dark:border-slate-700 rounded-[3px] bg-opacity-50 p-3 max-w-xl my-32 mx-auto border border-slate-200"
+    class="{!user
+      ? 'pointer-events-none opacity-75'
+      : ''} bg-white dark:bg-slate-800 dark:bg-opacity-30 dark:border-slate-700 rounded-[3px] bg-opacity-50 p-3 max-w-xl my-32 mx-auto border border-slate-200"
   >
     <div class=" p-3">
       <div class="flex items-center justify-center gap-3 flex-col">
@@ -192,6 +194,7 @@
             bind:this={fileInput}
             type="file"
             class="hidden"
+            disabled={!user}
           />
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div

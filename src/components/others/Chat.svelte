@@ -57,19 +57,23 @@
   let streamingMessage = "";
 
   const storeMessages = async (messages) => {
-    for (let index = 0; index < messages.length; index++) {
-      const msg = messages[index];
-      await client.collection("messages").create({
-        role: msg.role,
-        content: msg.content,
-        user_id: user.id,
-        chat_id: chat.id,
-      });
-    }
+    const mgs = messages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      user_id: user.id,
+      chat_id: chat.id,
+      created_at:
+        msg.role === "system"
+          ? new Date(new Date().setSeconds(new Date().getSeconds() + 10))
+          : new Date(),
+    }));
+    await client.collection("messages").create(mgs);
+    // for (let index = 0; index < messages.length; index++) {
+    //   const msg = messages[index];
+    // }
   };
 
   const handleSubmit = async ({ message: incomingMessage }) => {
-    console.log(incomingMessage);
     if (incomingMessage) {
       setMessages([...messages, { content: incomingMessage, role: "user" }]);
       const question = incomingMessage.trim();
@@ -91,40 +95,53 @@
 
       const stream: any = res.body;
       const reader = stream.getReader();
+      console.log(res.statusText);
+      if (res.statusText === "OK") {
+        loading = false;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done || value === "[DONE]") {
+              console.log("done");
+              const sytemAnswer = {
+                role: "system",
+                content: streamingMessage,
+              };
+              const userQuestion = {
+                role: "user",
+                content: question,
+              };
+              streamingMessage = "";
 
-      loading = false;
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done || value === "[DONE]") {
-            console.log("done");
-            const sytemAnswer = {
-              role: "system",
-              content: streamingMessage,
-            };
-            const userQuestion = {
-              role: "user",
-              content: question,
-            };
-            streamingMessage = "";
+              setMessages([...messages, sytemAnswer]);
+              await storeMessages([userQuestion, sytemAnswer]);
 
-            setMessages([...messages, sytemAnswer]);
-            await storeMessages([userQuestion, sytemAnswer]);
-
-            break;
+              break;
+            }
+            const decodedValue: any = new TextDecoder().decode(value);
+            if (decodedValue === "[DONE]") {
+              console.log("----- done -------");
+              continue;
+            }
+            streamingMessage = streamingMessage + decodedValue;
           }
-          const decodedValue: any = new TextDecoder().decode(value);
-          if (decodedValue === "[DONE]") {
-            console.log("----- done -------");
-            continue;
-          }
-          streamingMessage = streamingMessage + decodedValue;
+        } catch (error) {
+          console.error(error);
+        } finally {
+          reader.releaseLock();
+          console.log("finaly");
         }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        reader.releaseLock();
-        console.log("finaly");
+      } else {
+        const { value } = await reader.read();
+        const decodedValue: any = new TextDecoder().decode(value);
+        streamingMessage = "";
+        loading = false;
+        const sytemAnswer = {
+          role: "system",
+          content: JSON.parse(decodedValue).message,
+          status: "error",
+        };
+        setMessages([...messages, sytemAnswer]);
       }
     }
   };
@@ -196,11 +213,11 @@
       <input
         bind:value={message}
         type="text"
-        disabled={loading || Boolean(streamingMessage)}
+        disabled={loading || Boolean(streamingMessage) || loadingMessages}
         placeholder="Ask me anyhting about this document.."
         class="w-full px-1 dark:text-slate-300 text-slate-700 dark:placeholder:text-slate-400 placeholder:text-slate-500 text-[13px] font-medium outline-none bg-transparent"
       />
-      {#if loading}
+      {#if loading || Boolean(streamingMessage)}
         <CircleSpinner />
       {:else if streaming}
         <a href="">

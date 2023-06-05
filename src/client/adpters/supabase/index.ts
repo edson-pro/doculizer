@@ -119,16 +119,20 @@ class SuperbaseAdapter {
   }
 
   create(data) {
-    return supabase
+    const q = supabase
       .from(this.table)
       .insert(data)
-      .select(this.joins.length ? this.getJoins() : "*")
-      .single()
-      .then(({ error, data }) => {
-        this.clear();
-        if (error) throw Error(error.message);
-        return data;
-      });
+      .select(this.joins.length ? this.getJoins() : "*");
+
+    if (!Array.isArray(data)) {
+      q.single();
+    }
+
+    return q.then(({ error, data }) => {
+      this.clear();
+      if (error) throw Error(error.message);
+      return data;
+    });
   }
 
   getJoins() {

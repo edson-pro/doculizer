@@ -258,7 +258,7 @@
     <div
       class="flex border {hideSidebar
         ? 'cursor-pointer  px-2 py-2'
-        : ' px-3 py-[8px]'} mx-2 my-2 focus-within:border-primary dark:border-slate-700 dark:bg-opacity-50 dark:border-opacity-40 border-slate-200 bg-opacity-30 items-center gap-1 dark:bg-opacity-50 dark:bg-slate-800 bg-slate-200 rounded-[3px]"
+        : ' px-3 py-[8px]'} mx-2 my-2 focus-within:border-primary focus-within:dark:border-primary dark:border-slate-700 dark:border-opacity-40 border-slate-200 bg-opacity-30 items-center gap-1 dark:bg-opacity-50 dark:bg-slate-800 bg-slate-200 rounded-[3px]"
     >
       <SearchIcon size="15" class="dark:text-slate-300 text-slate-700" />
       {#if !hideSidebar}
@@ -299,7 +299,12 @@
           <div
             class="h-[300px] gap-3 flex flex-col w-full items-center justify-center"
           >
-            <img class="w-[120px]" src="/images/empty.svg" alt="" />
+            <img
+              class="w-[120px] select-none"
+              draggable="false"
+              src="/images/empty.svg"
+              alt=""
+            />
             <p
               class="text-center max-w-[230px] leading-7 dark:text-slate-400 text-slate-500 text-[13px] font-medium"
             >
@@ -398,11 +403,11 @@
                       if (action.click) {
                         showProfileDropdown = false;
                         action.click();
-                      }else{
-                        if(action.onSwitch){
-                            theme.setTheme(
-                              currentTheme === "dark" ? "light" : "dark"
-                            );
+                      } else {
+                        if (action.onSwitch) {
+                          theme.setTheme(
+                            currentTheme === "dark" ? "light" : "dark"
+                          );
                         }
                       }
                     }}

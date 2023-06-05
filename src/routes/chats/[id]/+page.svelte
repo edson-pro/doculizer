@@ -45,7 +45,7 @@
   $: messagesResults = useQuery({
     queryKey: messagesQk,
     queryFn: messagesFether,
-    enabled: user && !authLoading && Boolean(currentDoc?.id),
+    enabled: Boolean(currentDoc?.id),
     refetchOnWindowFocus: false,
     retry: false,
     keepPreviousData: true,

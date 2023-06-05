@@ -5,6 +5,7 @@ import { OpenAI } from "langchain/llms/openai";
 import supabase from "@/client/lib/supabase";
 import { OPENAI_API_KEY } from "$env/static/private";
 import { CallbackManager } from "langchain/callbacks";
+import { error } from "@sveltejs/kit";
 
 export async function POST({ request }) {
   const body = await request.json();
@@ -48,13 +49,15 @@ export async function POST({ request }) {
     vectorStore.asRetriever(1, { chat_id: chat_id })
   );
 
-  chain
-    .call({ question: question, chat_history: history })
-    .catch((e: Error) => console.error(e));
+  try {
+    chain
+      .call({ question: question, chat_history: history })
+      .catch((e) => console.log(e));
 
-  return new Response(stream.readable, {
-    headers: {
-      "content-type": "text/event-stream",
-    },
-  });
+    return new Response(stream.readable, {
+      headers: {
+        "content-type": "text/event-stream",
+      },
+    });
+  } catch (e) {}
 }

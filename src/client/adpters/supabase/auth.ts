@@ -4,9 +4,8 @@ import { PUBLIC_ORIGIN_URL } from "$env/static/public";
 const getURL = () => {
   let url =
     PUBLIC_ORIGIN_URL ?? // Automatically set by Vercel.
-    "http://localhost:5173/";
+    "http://localhost:5173";
 
-  url = url.charAt(url.length - 1) === "/" ? url : `${url}/`;
   return url;
 };
 
