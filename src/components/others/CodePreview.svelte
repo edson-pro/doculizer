@@ -1,11 +1,15 @@
 <script>
-  import Highlight from "svelte-highlight";
+  import { HighlightAuto } from "svelte-highlight";
   import typescript from "svelte-highlight/languages/typescript";
-  import "svelte-highlight/styles/atom-one-dark.css";
+  import atomOneDark from "svelte-highlight/styles/atom-one-dark";
 
   export let text;
 </script>
 
+<svelte:head>
+  {@html atomOneDark}
+</svelte:head>
+
 <div>
-  <Highlight language={typescript} code={text} />
+  <HighlightAuto code={text} />
 </div>

@@ -15,7 +15,10 @@
 
   // set theme if storage changes (could be from a different tab)
   function onStorage() {
-    theme.setTheme(localStorage.theme || "system");
+    const system = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+    theme.setTheme(localStorage.theme || system);
   }
 
   // persist and apply the theme on change

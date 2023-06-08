@@ -84,6 +84,7 @@
                     type: "success",
                     title: "Deleted succesfully",
                   });
+                  goto("/chats");
                   console.log("Deleted Documents");
                 }, 500);
               });
@@ -173,10 +174,10 @@
 
   const queryClient = useQueryClient();
 
-  const handleChange = async (e) => {
+  const handleChange = (e) => {
+    console.log(e);
     uploadingFile = true;
     const file = e.target.files[0];
-
     return createChat({ file, user })
       .then((data) => {
         uploadingFile = false;
@@ -266,7 +267,7 @@
           on:keyup={({ target: { value } }) => debounce(value)}
           value={searchText}
           type="text"
-          placeholder="Search here.."
+          placeholder="Search your documents.."
           class=" bg-transparent px-2 w-full font-medium dark:text-slate-400 dark:placeholder:text-slate-400 text-slate-600 text-[13px] outline-none"
         />
       {/if}
@@ -290,7 +291,7 @@
       class="flex-1 flex flex-col border-t dark:border-slate-700 dark:bg-opacity-50 border-slate-200 h-full"
     >
       <div class="px-0 w-full h-full">
-        {#if $chatsResult.status === "loading"}
+        {#if $chatsResult.status === "loading" || authLoading}
           <div class="h-[200px] w-full flex items-center justify-center">
             <CircleSpinner />
           </div>
@@ -312,7 +313,9 @@
                 on:click={() => {
                   inputRef.click();
                 }}
-                class="text-primary text-opacity-80 font-semibold"
+                class="{uploadingFile
+                  ? 'pointer-events-none opacity-70'
+                  : ''} text-primary text-opacity-80 font-semibold"
                 href="">Click here to upload.</a
               >
             </p>
@@ -352,7 +355,7 @@
           <!-- svelte-ignore a11y-invalid-attribute -->
           <!-- svelte-ignore a11y-missing-attribute -->
           <a
-            on:click={(e) => {
+            on:click|stopPropagation={(e) => {
               inputRef.click();
             }}
             class="flex items-center gap-2 text-[13px] font-semibold text-primary"
@@ -391,7 +394,7 @@
               start: 0.95,
               easing: linear,
             }}
-            class="absolute rounded-[3px] p-1 left-1 bottom-14 border dark:border-slate-700 dark:bg-opacity border-slate-200 shadow-sm dark:bg-slate-900 bg-white w-[97%] mx-auto"
+            class="absolute rounded-[3px] z-50 p-1 left-1 bottom-14 border dark:border-slate-700 dark:bg-opacity border-slate-200 shadow-sm dark:bg-slate-900 bg-white w-[97%] mx-auto"
           >
             <ul>
               {#each actions as action}

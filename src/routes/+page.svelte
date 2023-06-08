@@ -41,7 +41,7 @@
     class="max-w-2xl py-36 mx-auto flex flex-col justify-center items-center gap-4"
   >
     <h4
-      class="font-semibold text-2xl dark:text-slate-200 leading-10 text-center"
+      class="font-semibold text-2xl dark:text-slate-50 leading-10 text-center"
     >
       Chat with documents. Get instant answers with cited sources.
     </h4>
@@ -54,7 +54,7 @@
     <Button
       click={handleLogin}
       loading={googleLoading}
-      customClass="!bg-white"
+      customClass="dark:!text-slate-900 !bg-white"
       variant="default"
       leftIcon={Google}>Continue With Google</Button
     >

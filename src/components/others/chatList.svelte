@@ -6,6 +6,7 @@
   import { onMount } from "svelte";
   import { afterUpdate } from "svelte";
   import Link from "./Link.svelte";
+  import { auth } from "@/stores/auth";
 
   export let messages;
   export let loading;
@@ -34,6 +35,9 @@
   afterUpdate(() => {
     scrollContainerToBottom(); // Scroll to bottom when messages change
   });
+
+  $: user = $auth.user;
+  $: authLoading = $auth.loading;
 </script>
 
 <div
@@ -55,7 +59,7 @@
     >
       <div>
         {#if chat.role === "user"}
-          <Avatar name="Ntwali edson" />
+          <Avatar name={user.username} src={user.photo} />
         {/if}
         {#if chat.role === "system"}
           <div
@@ -108,12 +112,9 @@
             id="wrapper"
             class="{chat.status === 'error'
               ? 'border border-red-500 mt-[2px] prose-p:!mb-0 prose-p:dark:!text-slate-300 prose-p:!text-slate-700 rounded-[3px] px-3 bg-red-500 dark:bg-opacity-25 bg-opacity-10'
-              : ''} p-5- -mt-1 prose-a:text-blue-500 font-medium prose-headings:mb-3 prose-p:mb-3 dark:prose-p:text-slate-400 prose-p:text-slate-500 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
+              : ''} p-5- -mt-1 prose-code:text-yellow-600 prose-a:text-blue-500 font-medium prose-headings:mb-3 prose-p:mb-3 dark:prose-p:text-slate-400 prose-p:text-slate-500 prose-code:!text-[13.5px] prose-code:!leading-7 prose-code:!rounded-[3px] prose-code:!p-[10px] prose-code:!my-4 prose-strong:text-slate-800 prose-strong:!font-semibold overflow-hidden prose-slate prose-sm prose-h1:text-[15px] prose-p:text-[13px] prose-h1:font-semibold prose-p:leading-8 prose lg:prose-xl"
           >
-            <SvelteMarkdown
-              source={chat.content}
-              renderers={{ code: CodePreview, link: Link }}
-            />
+            <SvelteMarkdown source={chat.content} renderers={{ link: Link }} />
           </div>
         {/if}
       </div>

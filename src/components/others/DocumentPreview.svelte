@@ -33,6 +33,19 @@
   import { goto } from "$app/navigation";
   import Empty from "../ui/Empty.svelte";
 
+  function truncateString(str) {
+    const maxLength = 35;
+    if (str.length <= maxLength) {
+      return str;
+    }
+
+    const midpoint = Math.floor(maxLength / 2);
+    const firstHalf = str.slice(0, midpoint - 1);
+    const secondHalf = str.slice(-midpoint + 2);
+
+    return `${firstHalf}...${secondHalf}`;
+  }
+
   const handleCallapse = () => {
     setUiState({ ...$uiState, hideSidebar: false });
   };
@@ -217,8 +230,10 @@
         <Skeleton customClass="h-4 w-[120px]" />
       {:else}
         <div class="flex items-center gap-2">
-          <h4 class="font-semibold dark:text-slate-100 capitalize text-[13px]">
-            {error ? error : currentDoc?.title}
+          <h4
+            class="font-semibold dark:text-slate-100 truncate capitalize text-[13px]"
+          >
+            {error ? error : truncateString(currentDoc?.title)}
           </h4>
           {#if currentDoc}
             <span
@@ -238,58 +253,7 @@
         </div>
       {/if}
     </div>
-    <!-- <a
-      on:click={() => {
-        [
-          {
-            role: "user",
-            created_at: new Date(),
-            content:
-              "What are the intellectual property rights assigned to Unit U+2467 GmbH or its customers in relation to the work results of an Employee working on projects for Ape Unit and its related entities?",
-          },
-          {
-            role: "system",
-            created_at: new Date(),
-            content:
-              "The intellectual property rights connected to the work results of an Employee when working on projects of Ape Unit and its related companies or customers are assigned to Unit U+2467 GmbH or to its customers - depending on the regulations in the contracts between Unit U+2467 GmbH and its customers.",
-          },
-          {
-            role: "user",
-            created_at: new Date(),
-            content: "what is the length of the contract",
-          },
-          {
-            role: "system",
-            created_at: new Date(),
-            content:
-              "The length of the contract is one year, from March 1st, 2023, to February 29th, 2024, with a probationary period of six months.",
-          },
-          {
-            role: "user",
-            created_at: new Date(),
-            content:
-              "What are the intellectual property rights assigned to Unit U+2467 GmbH or its customers in relation to the work results of an Employee working on projects for Ape Unit and its related entities?",
-          },
-          {
-            role: "system",
-            created_at: new Date(),
-            content:
-              "The intellectual property rights connected to the work results of an Employee when working on projects of Ape Unit and its related companies or customers are assigned to Unit U+2467 GmbH or to its customers - depending on the regulations in the contracts between Unit U+2467 GmbH and its customers.",
-          },
-        ].forEach((e) => {
-          return client
-            .collection("messages")
-            .create({
-              ...e,
-              chat_id: 34,
-              user_id: "f00e76e2-df7f-437c-883a-d739af279cb3",
-            })
-            .then((e) => {
-              console.log("done");
-            });
-        });
-      }}>dd</a
-    > -->
+
     <!-- {JSON.stringify($chatsResult)} -->
     <!-- svelte-ignore a11y-missing-attribute -->
     <div class="">
@@ -323,7 +287,7 @@
   />
   <div class="w-full z-50 absolute bottom-0 px-3 h-[55px]">
     <div
-      class="w-[80%] mx-auto h-[45px]- py-2 shadow-md bg-opacity-80 backdrop-blur-sm rounded-[3px] dark:bg-slate-900 bg-white border dark:border-t-slate-700 dark:border-slate-700 border-slate-300"
+      class="w-[80%] mx-auto h-[45px]- py-2 shadow-md dark:bg-opacity-80 bg-opacity-80 dark:backdrop-blur-md backdrop-blur-sm rounded-[3px] dark:bg-slate-900 bg-white border dark:border-t-slate-700 dark:border-slate-700 border-slate-300"
     >
       <div class="flex items-center px-2 w-full justify-between">
         <a

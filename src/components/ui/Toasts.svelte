@@ -7,7 +7,7 @@
 
 {#if $toasts}
   <section
-    class="bottom-0 fixed p-1 left-0 right-0 items-end w-full- flex justify-center flex-col z-[1000]"
+    class="bottom-0 w-fit ml-auto fixed p-1 left-0 right-0 items-end w-full- flex justify-center flex-col z-[1000]"
   >
     {#each $toasts as toast (toast.id)}
       <div

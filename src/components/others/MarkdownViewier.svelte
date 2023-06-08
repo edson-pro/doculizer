@@ -33,7 +33,10 @@
     id="pdf-container"
     class="w-full max-w-[630px] mx-auto h-fit my-3 first:mt-0 border overflow-hidden dark:border-slate-700 border-slate-300 dark:bg-slate-900 bg-white rounded-[3px]"
   >
-    <article id="wrapper" class="preview-typo">
+    <article
+      id="wrapper"
+      class="preview-typo prose-pre:!text-[14px] prose-pre:!p-0"
+    >
       {#if isLoading}
         <div class="h-[600px] w-full flex justify-center items-center">
           <CircleSpinner />

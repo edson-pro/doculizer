@@ -21,6 +21,8 @@ export function createThemeSwitcher() {
     const saved = localStorage.theme;
     if (saved === "light" || saved === "dark") {
       theme = saved;
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      theme = "dark";
     }
   }
 

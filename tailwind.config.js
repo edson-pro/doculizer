@@ -17,17 +17,6 @@ module.exports = {
         md: { max: "767px" },
         sm: { max: "639px" },
       },
-      typography: {
-        default: {
-          css: {
-            pre: false,
-            code: false,
-            "pre code": false,
-            "code::before": false,
-            "code::after": false,
-          },
-        },
-      },
     },
   },
   plugins: [
