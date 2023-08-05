@@ -1,9 +1,11 @@
 import supabase from "../../lib/supabase";
-import { PUBLIC_ORIGIN_URL } from "$env/static/public";
+// import { PUBLIC_ORIGIN_URL } from "$env/static/public";
+
+const PUBLIC_ORIGIN_URL = "http://localhost:5173"
 
 const getURL = () => {
   let url =
-    PUBLIC_ORIGIN_URL ?? // Automatically set by Vercel.
+    // PUBLIC_ORIGIN_URL ?? // Automatically set by Vercel.
     "http://localhost:5173";
 
   return url;
