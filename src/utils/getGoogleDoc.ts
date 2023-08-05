@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import keyFile from "./serviceAccounts.json";
+import keyFile from "./serviceAccounts";
 
 function getGoogleDocIdFromUrl(url) {
   const match = url.match(/\/document\/d\/([a-zA-Z0-9-_]+)/);
